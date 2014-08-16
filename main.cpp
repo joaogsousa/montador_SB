@@ -5,8 +5,69 @@
 #include <cstdlib>
 #include <vector>
 #include <cstring>
+#include "pre_parser.cpp"
+#include <cassert>
+
 
 using namespace std;
+using namespace pre_parser;
+
+//remover os ifs e as linhas que dever ser tiradas
+vector<char*> removerLinhas(vector<char*> vetor){
+    int i;
+    int numToRemove;
+    int indice;
+
+    for(i=0;i<vetor.size();i++){
+        numToRemove = 0;
+        if(pre_parser::stringCompareI(vetor[i],"IF")){
+            if(pre_parser::stringCompareI(vetor[i+1],"0")){
+                //remover a proxima linha
+                if(pre_parser::isLabel(vetor[i+2])){
+                    numToRemove++;
+                    indice = i+3;
+                }
+                else{
+                    indice = i+2;
+                }
+                numToRemove++; //representa o mnemonico da instrucao
+                numToRemove = numToRemove + pre_parser::numOperandos(vetor[indice]);
+
+
+                vetor.erase(vetor.begin()+i+2,vetor.begin()+i+2+numToRemove);
+            }
+            vetor.erase(vetor.begin()+i,vetor.begin()+i+2);
+            i --;
+        }
+
+    }
+
+
+    return vetor;
+
+}
+
+
+//testes do namespace pre_parser
+void testes_pre_parser(vector<char*> vetor){
+    char * instrucao = "add";
+    char* instrucao_copy = "copy";
+    char* label = "label1:";
+    char* diretiva = "section";
+    char* diretiva2 = "space";
+
+    assert(pre_parser::isInstruction(instrucao));
+    assert(!pre_parser::isInstruction("lol"));
+    assert(pre_parser::isLabel(label));
+    assert(!pre_parser::isLabel(diretiva));
+    assert(pre_parser::numOperandos(instrucao_copy) == 2);
+    assert(pre_parser::numOperandos(instrucao) == 1);
+    assert(pre_parser::numOperandos(diretiva) == -1);
+
+    assert(pre_parser::isDiretiva(vetor[0]));
+
+}
+
 
 // Percorre e imprime o vetor (Testes)
 void verificarVetor(vector<char*> vetor){
@@ -135,8 +196,13 @@ int main(int argc, char * argv[]){
         }
     }
 
+
+    vetorTokens = removerLinhas(vetorTokens);
+
     // Teste do preprocessamento
     verificarVetor(vetorTokens);
+
+    testes_pre_parser(vetorTokens);
 
     fpInput.close();
     fpObj.close();

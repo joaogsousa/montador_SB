@@ -1,0 +1,11 @@
+all: programa
+    
+
+programa: pre_parser.o main.o
+	g++ -Wall pre_parser.o main.o -o montador
+
+pre_parser.o: pre_parser.cpp pre_parser.hpp
+	g++ -Wall pre_parser.cpp -c
+
+main.o: main.cpp
+	g++ -Wall main.cpp -c

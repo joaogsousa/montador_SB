@@ -1,0 +1,14 @@
+
+section text     
+add n1
+if lollol
+copy n2,n3
+if 0
+add n1 
+
+sub lollol
+
+
+section data
+
+lollol: equ 1
