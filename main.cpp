@@ -8,54 +8,49 @@
 
 using namespace std;
 
-
+// Percorre e imprime o vetor (Testes)
 void verificarVetor(vector<char*> vetor){
-    int i;
-    for(i=0;i<vetor.size();i++){
+    unsigned i;
+    for(i=0; i<vetor.size(); i++){
         cout << vetor[i] << endl;
-
     }
 
 }
 
-vector<char*> substituir(vector<char*> vetorTokens,int i){
+// Percorre o vetor e substitui as ocorrencias de vetor[i-1] pelo valor de vetor[i+1]
+vector<char*> substituir(vector<char*> vetorTokens, int i){
     char* procurar = vetorTokens[i-1];
     char* novo = vetorTokens[i+1];
-    int j;
+    unsigned j;
     int arrumado = 0;
 
+    // Retirando ':' da string a ser substituida
     j = 0;
     while(!arrumado){
         if(procurar[j] == ':'){
             procurar[j] = '\0';
             arrumado = 1;
         }
-
         j++;
     }
 
-
-
-    for(j=0;j<vetorTokens.size();j++){
-        if(!strcmp(vetorTokens[j],procurar)){
+    //Percorrendo o vetor e substituindo as ocorrencias
+    for(j=0; j<vetorTokens.size(); j++){
+        if(!strcmp(vetorTokens[j], procurar)){
             vetorTokens[j] = novo;
         }
-
     }
 
     return vetorTokens;
 
 }
 
-char* readFile(char* filename)
-{
+char* readFile(char* filename) {
 	char* content;
 	long int size;
-    FILE* file = fopen(filename,"r");
+    FILE* file = fopen(filename, "r");
     if(file == NULL)
-    {
         return NULL;
-    }
 
     fseek(file, 0, SEEK_END);
     size = ftell(file);
@@ -63,11 +58,12 @@ char* readFile(char* filename)
 
     content = (char*)malloc(size);
 
-    fread(content,1,size,file);
+    fread(content, 1, size, file);
 
     return content;
 }
 
+// Cria vetor de tokens separados por espacos e \n
 vector<char*> tokens(char* arquivo){
     char* stringTotal;
     vector<char*> vetorTokens;
@@ -87,82 +83,63 @@ vector<char*> tokens(char* arquivo){
 
 }
 
-int main(int argc,char * argv[]){
-    string nomeInput;
-    string preProcess;
-    string object;
+int main(int argc, char * argv[]){
 
     ifstream fpInput;
+    ofstream fpPre;
+    ofstream fpObj;
 
     vector<char*> vetorTokens;
 
     char buffer;
-
-    int i;
-
-
-
+    unsigned i;
 
     if(argc != 4){
-        cout << "Erro na passagem de argumentos" << endl;
+        cout << "Erro! Numero de argumentos diferente do esperado." << endl;
         exit(1);
     }
-    else{
-        nomeInput = argv[1];
-        preProcess = argv[2];
-        object = argv[3];
-    }
 
+    // Arquivos que serao manipulados
+    fpInput.open(argv[1]);  //.asm
+    fpPre.open(argv[2]);    //.pre
+    fpObj.open(argv[3]);    //.obj
 
-
-    fpInput.open(argv[1]);
     if(!fpInput.is_open()){
-        cout << "Erro ao ler o arquivo assembly de input" << endl;
+        cout << "Erro! Nao foi possivel ler o arquivo .asm de entrada." << endl;
         exit(1);
     }
 
-    ofstream fpPre;
-    fpPre.open(argv[2]);
-
-    while(!fpInput.eof()){
+    // Removendo comentarios
+    while(!fpInput.eof()) {
         buffer = fpInput.get();
-
-
-        if(buffer == ';'){
+        if(buffer == ';') {
             while(buffer != '\n' && !fpInput.eof()){
                 buffer = fpInput.get();
-
             }
-
         }
-
-        if(buffer != EOF){
+        if(buffer != EOF)
             fpPre << buffer ;
-        }
-
-
-
-
     }
+
     fpPre.close();
 
-    vetorTokens = tokens(argv[2]);
+    /** Lidando com diretivas **/
 
-    for(i=0;i<vetorTokens.size();i++){
+    vetorTokens = tokens(argv[2]);
+    // Encontra as variaveis inicializadas e as substitui nas instrucoes
+    for(i=0; i<vetorTokens.size(); i++){
         if(!strcmp(vetorTokens[i],"EQU")){
             vetorTokens = substituir(vetorTokens,i);
-            vetorTokens.erase(vetorTokens.begin()+(i-1),vetorTokens.begin()+(i+2));
-            i-=2;
+            vetorTokens.erase(vetorTokens.begin()+(i-1), vetorTokens.begin()+(i+2));
+            i -= 2;
         }
-
     }
 
-
+    // Teste do preprocessamento
     verificarVetor(vetorTokens);
 
-
     fpInput.close();
-
+    fpObj.close();
 
     return 0;
 }
