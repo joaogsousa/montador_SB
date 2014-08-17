@@ -11,4 +11,4 @@ sub lollol
 
 section data
 
-lollol: equ 1
+lollol: equ 0

@@ -97,7 +97,7 @@ vector<char*> substituir(vector<char*> vetorTokens, int i){
 
     //Percorrendo o vetor e substituindo as ocorrencias
     for(j=0; j<vetorTokens.size(); j++){
-        if(!strcmp(vetorTokens[j], procurar)){
+        if(pre_parser::stringCompareI(vetorTokens[j], procurar)){
             vetorTokens[j] = novo;
         }
     }
@@ -189,7 +189,7 @@ int main(int argc, char * argv[]){
     vetorTokens = tokens(argv[2]);
     // Encontra as variaveis inicializadas e as substitui nas instrucoes
     for(i=0; i<vetorTokens.size(); i++){
-        if(!strcmp(vetorTokens[i],"EQU")){
+        if(pre_parser::stringCompareI(vetorTokens[i],"EQU")){
             vetorTokens = substituir(vetorTokens,i);
             vetorTokens.erase(vetorTokens.begin()+(i-1), vetorTokens.begin()+(i+2));
             i -= 2;
