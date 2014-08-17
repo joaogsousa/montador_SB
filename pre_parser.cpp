@@ -1,15 +1,10 @@
 #include "pre_parser.hpp"
 
-
 namespace pre_parser{
     int isPseudo(char* string){
 
-
-
         return 0;
     }
-
-
 
     int isLabel(char* string){
         int i;
@@ -18,16 +13,13 @@ namespace pre_parser{
         while(string[i] != '\0'){
             if(string[i] == ':' && string[i+1] == '\0'){
                 return 1;
-
             }
 
             i++;
         }
 
         return 0;
-
     }
-
 
     int numOperandos(char* instrucao){
         if(stringCompareI(instrucao,"COPY")){
@@ -46,15 +38,9 @@ namespace pre_parser{
                     return -1;
 
                 }
-
             }
-
-
         }
-
-
     }
-
 
     int isOperando(char* string){
         if(string[0] == 'N'){
@@ -62,19 +48,14 @@ namespace pre_parser{
 
         }else{
             return 0;
-
         }
-
     }
 
 
     vector<char*> getBasicInstFromPseudo(vector<char*> pseudo){
 
-
-
         return pseudo;
     }
-
 
     //1 - upper || 2 - lower || 3 - nao caracter
     int isChar(char c){
@@ -91,11 +72,8 @@ namespace pre_parser{
             }
             else{
                 return 0;
-
             }
-
         }
-
     }
 
     int isNum(char c){
@@ -106,9 +84,7 @@ namespace pre_parser{
         }
         else{
             return 0;
-
         }
-
     }
 
     int letraCompare(char c, char d){
@@ -139,12 +115,9 @@ namespace pre_parser{
         }
         else{
             return 0;
-
         }
 
         return 1;
-
-
     }
 
 
@@ -157,95 +130,69 @@ namespace pre_parser{
 
         if(stringCompareI(string,section)){
             return section;
-
         }
         if(stringCompareI(string,equ)){
             return equ;
-
         }
         if(stringCompareI(string,if_string)){
             return if_string;
-
         }
         if(stringCompareI(string,space)){
             return space;
-
         }
         if(stringCompareI(string,const_string)){
             return const_string;
-
         }
         return NULL;
-
-
     }
-
 
     char* isInstruction(char* string){
 
         if(stringCompareI(string,"ADD")){
             return "ADD";
-
         }
         if(stringCompareI(string,"SUB")){
             return "SUB";
-
         }
         if(stringCompareI(string,"MULT")){
             return "MULT";
-
         }
         if(stringCompareI(string,"DIV")){
             return "DIV";
-
         }
         if(stringCompareI(string,"JMP")){
             return "JMP";
-
         }
         //mais
         if(stringCompareI(string,"JMPN")){
             return "JMPN";
-
         }
         if(stringCompareI(string,"JMPP")){
             return "JMPP";
-
         }
         if(stringCompareI(string,"JMPZ")){
             return "JMPZ";
-
         }
         if(stringCompareI(string,"COPY")){
             return "COPY";
-
         }
         if(stringCompareI(string,"LOAD")){
             return "LOAD";
-
         }
         //mais
         if(stringCompareI(string,"STORE")){
             return "STORE";
-
         }
         if(stringCompareI(string,"INPUT")){
             return "INPUT";
-
         }
         if(stringCompareI(string,"OUTPUT")){
             return "OUTPUT";
-
         }
         if(stringCompareI(string,"STOP")){
             return "STOP";
-
         }
 
         return NULL;
-
-
     }
-
-
 };
