@@ -43,7 +43,7 @@ namespace pre_parser{
     }
 
     int isOperando(char* string){
-        if(string[0] == 'N'){
+        if((string[0] == 'N' || string[0] == 'n') && !pre_parser::isLabel(string)){
             return 1;
 
         }else{
@@ -195,4 +195,44 @@ namespace pre_parser{
 
         return NULL;
     }
+
+    void gerarPreProcessado(vector<char*> vetorTokens, char* nomeArquivo){
+        ofstream arquivoPre;
+        int i;
+        int espaco;
+
+        arquivoPre.open(nomeArquivo);
+
+        for(i=0;i<vetorTokens.size();i++){
+            espaco = 0;
+            arquivoPre << vetorTokens[i];
+            if(stringCompareI(vetorTokens[i],"STOP")){
+                arquivoPre << '\n';
+                espaco = 1;
+
+            }
+            if(stringCompareI(vetorTokens[i],"DATA") || stringCompareI(vetorTokens[i],"TEXT")){
+                arquivoPre << '\n';
+                espaco = 1;
+
+            }
+            if(i > 1 && (pre_parser::numOperandos(vetorTokens[i-1]) == 1 || pre_parser::numOperandos(vetorTokens[i-2]) == 2)){
+                arquivoPre << '\n';
+                espaco = 1;
+
+            }
+
+            if(!espaco){
+                arquivoPre << ' ';
+
+            }
+
+
+
+        }
+
+        arquivoPre.close();
+
+    }
+
 };

@@ -183,6 +183,8 @@ int main(int argc, char * argv[]){
 
     testes_pre_parser(vetorTokens);
 
+    pre_parser::gerarPreProcessado(vetorTokens,argv[2]);
+
     fpInput.close();
     fpObj.close();
 

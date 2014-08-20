@@ -1,14 +1,4 @@
-
-section text     
+section text
 add n1
-if lollol
-copy n2,n3
-if 0
-add n1 
-
-sub lollol
-
-
+sub 0
 section data
-
-lollol: equ 0

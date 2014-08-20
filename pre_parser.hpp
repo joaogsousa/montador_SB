@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 
+
 using namespace std;
 
 namespace pre_parser{
@@ -23,6 +24,7 @@ namespace pre_parser{
     int letraCompare(char c, char d);
     int isNum(char c);
     int isChar(char c);
+    void gerarPreProcessado(vector<char*> vetorTokens, char* nomeArquivo);
 };
 
 
