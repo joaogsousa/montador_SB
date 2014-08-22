@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>
+#include <map>
 
 
 using namespace std;
@@ -14,7 +15,7 @@ using namespace std;
 namespace pre_parser{
     int isInstruction(string string1);
     int isPseudo(string string1);
-    string isDiretiva(string string1);
+    int isDiretiva(string string1);
     int isLabel(string string1);
     int numOperandos(string instrucao);
     int isOperando(string string1);
@@ -23,6 +24,8 @@ namespace pre_parser{
     int letraCompare(char c, char d);
     int isNum(char c);
     int isChar(char c);
+    void verificarMap(map<string,int> mapa);
+    void verificarVector(vector<string> vetorStrings);
 };
 
 

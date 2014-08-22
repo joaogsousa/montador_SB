@@ -6,12 +6,12 @@ namespace pre_parser{
         return 0;
     }
 
-    int isLabel(string string){
+    int isLabel(string string1){
         int i;
         i = 0;
 
-        while(string[i] != '\0'){
-            if(string[i] == ':' && string[i+1] == '\0'){
+        while(string1[i] != '\0'){
+            if(string1[i] == ':' && string1[i+1] == '\0'){
                 return 1;
             }
 
@@ -121,7 +121,7 @@ namespace pre_parser{
     }
 
 
-    string isDiretiva(string string1){
+    int isDiretiva(string string1){
         string section("section");
         string equ("equ");
         string if_string("if");
@@ -129,21 +129,21 @@ namespace pre_parser{
         string const_string("const");
 
         if(string1.compare(section)){
-            return section;
+            return 1;
         }
         if(string1.compare(equ)){
-            return equ;
+            return 1;
         }
         if(string1.compare(if_string)){
-            return if_string;
+            return 1;
         }
         if(string1.compare(space)){
-            return space;
+            return 1;
         }
         if(string1.compare(const_string)){
-            return const_string;
+            return 1;
         }
-        return NULL;
+        return 0;
     }
 
     int isInstruction(string string1){
@@ -194,6 +194,27 @@ namespace pre_parser{
         }
 
         return 0;
+    }
+
+    void verificarMap(map<string,int> mymap){
+        // show content:
+        for (map<string,int>::iterator it=mymap.begin(); it!=mymap.end(); ++it){
+            std::cout << it->first << " => " << it->second << '\n';
+        }
+
+
+    }
+
+
+    void verificarVector(vector<string> vetorStrings){
+        int i;
+
+        for(i=0;i<vetorStrings.size();i++){
+            cout << vetorStrings[i] << endl;
+
+        }
+
+
     }
 
 
