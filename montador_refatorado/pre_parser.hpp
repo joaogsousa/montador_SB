@@ -25,7 +25,8 @@ namespace pre_parser{
     int isNum(char c);
     int isChar(char c);
     void verificarMap(map<string,int> mapa);
-    void verificarVector(vector<string> vetorStrings);
+    void verificarVector(vector<vector<string> > vetorStrings);
+    void gerarPreProcessado(vector<vector<string> > vetorStrings,char* arquivoPre);
 };
 
 

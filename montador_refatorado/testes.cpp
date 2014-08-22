@@ -1,7 +1,7 @@
 #include "testes.hpp"
 
 //testes do namespace pre_parser
-void testes_pre_parser(vector<string> vetor){
+void testes_pre_parser(){
     string instrucao = "add";
     string instrucao_copy = "copy";
     string label = "label1:";
@@ -15,7 +15,5 @@ void testes_pre_parser(vector<string> vetor){
     assert(pre_parser::numOperandos(instrucao_copy) == 2);
     assert(pre_parser::numOperandos(instrucao) == 1);
     assert(pre_parser::numOperandos(diretiva) == -1);
-
-    assert(pre_parser::isDiretiva(vetor[0]));
 
 }

@@ -128,19 +128,19 @@ namespace pre_parser{
         string space("space");
         string const_string("const");
 
-        if(string1.compare(section)){
+        if(stringCompareI(string1, section)){
             return 1;
         }
-        if(string1.compare(equ)){
+        if(stringCompareI(string1, equ)){
             return 1;
         }
-        if(string1.compare(if_string)){
+        if(stringCompareI(string1, if_string)){
             return 1;
         }
-        if(string1.compare(space)){
+        if(stringCompareI(string1, space)){
             return 1;
         }
-        if(string1.compare(const_string)){
+        if(stringCompareI(string1, const_string)){
             return 1;
         }
         return 0;
@@ -148,48 +148,49 @@ namespace pre_parser{
 
     int isInstruction(string string1){
 
-        if(string1.compare("ADD")){
+
+        if(stringCompareI(string1, "ADD")){
             return 1;
         }
-        if(string1.compare("SUB")){
+        if(stringCompareI(string1, "SUB")){
             return 1;
         }
-        if(string1.compare("MULT")){
+        if(stringCompareI(string1, "MULT")){
             return 1;
         }
-        if(string1.compare("DIV")){
+        if(stringCompareI(string1, "DIV")){
             return 1;
         }
-        if(string1.compare("JMP")){
-            return 1;
-        }
-        //mais
-        if(string1.compare("JMPN")){
-            return 1;
-        }
-        if(string1.compare("JMPP")){
-            return 1;
-        }
-        if(string1.compare("JMPZ")){
-            return 1;
-        }
-        if(string1.compare("COPY")){
-            return 1;
-        }
-        if(string1.compare("LOAD")){
+        if(stringCompareI(string1, "JMP")){
             return 1;
         }
         //mais
-        if(string1.compare("STORE")){
+        if(stringCompareI(string1, "JMPN")){
             return 1;
         }
-        if(string1.compare("INPUT")){
+        if(stringCompareI(string1, "JMPP")){
             return 1;
         }
-        if(string1.compare("OUTPUT")){
+        if(stringCompareI(string1, "JMPZ")){
             return 1;
         }
-        if(string1.compare("STOP")){
+        if(stringCompareI(string1, "COPY")){
+            return 1;
+        }
+        if(stringCompareI(string1, "LOAD")){
+            return 1;
+        }
+        //mais
+        if(stringCompareI(string1, "STORE")){
+            return 1;
+        }
+        if(stringCompareI(string1, "INPUT")){
+            return 1;
+        }
+        if(stringCompareI(string1, "OUTPUT")){
+            return 1;
+        }
+        if(stringCompareI(string1, "STOP")){
             return 1;
         }
 
@@ -206,13 +207,41 @@ namespace pre_parser{
     }
 
 
-    void verificarVector(vector<string> vetorStrings){
+    void verificarVector(vector<vector<string> > vetorStrings){
         int i;
+        int j;
 
         for(i=0;i<vetorStrings.size();i++){
-            cout << vetorStrings[i] << endl;
+            for(j=0;j<vetorStrings[i].size();j++){
 
+                cout << vetorStrings[i][j] << " ";
+            }
+            cout << endl;
         }
+
+
+    }
+
+
+    void gerarPreProcessado(vector<vector<string> > vetorStrings,char* arquivoPre){
+        int i;
+        int j;
+        ofstream arquivoSaida(arquivoPre);
+
+
+        for(i=0;i<vetorStrings.size();i++){
+            for(j=0;j<vetorStrings[i].size();j++){
+                arquivoSaida << vetorStrings[i][j];
+                if(j+1<vetorStrings[i].size()){
+                    arquivoSaida << " ";
+                }
+            }
+            arquivoSaida << endl;
+        }
+
+        arquivoSaida.close();
+
+
 
 
     }

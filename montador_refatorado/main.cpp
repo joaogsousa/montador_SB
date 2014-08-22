@@ -15,6 +15,87 @@ using namespace pre_parser;
 
 map<string, int> tabelaDeRotulos;
 vector< vector <string> > vetorTokensInput;
+vector< vector <string> > vetorTokensTratado;
+
+
+void limparLinhasVazias(){
+    int i;
+
+    for(i=0;i<vetorTokensTratado.size();i++){
+        if(vetorTokensTratado[i][0] == "\n"){
+            vetorTokensTratado.erase(vetorTokensTratado.begin() + i);
+            i--;
+        }
+
+    }
+}
+
+void avaliarIf(){
+    int i;
+    int j;
+    string stringIf = "IF";
+    string zero = "0";
+
+    for(i=0;i<vetorTokensTratado.size();i++){
+        for(j=0;j<vetorTokensTratado[i].size();j++){
+            if(pre_parser::stringCompareI(vetorTokensTratado[i][j],stringIf)){
+                cout << "tem um if\n";
+                if(pre_parser::stringCompareI(vetorTokensTratado[i][j+1],zero)){
+                    cout << "if igual a zero\n";
+                    vetorTokensTratado.erase(vetorTokensTratado.begin()+i+1);
+
+                }
+                vetorTokensTratado.erase(vetorTokensTratado.begin()+i);
+                i--;
+            }
+        }
+    }
+
+}
+
+
+//substitue ocorrencia de string no vetor
+void substituir(string busca,string subs){
+    int i;
+    int j;
+
+
+    for(i=0;i<vetorTokensTratado.size();i++){
+        for(j=0;j<vetorTokensTratado[i].size();j++){
+            if(pre_parser::stringCompareI(vetorTokensTratado[i][j],busca)){
+                vetorTokensTratado[i][j] = subs;
+            }
+        }
+    }
+
+}
+
+//pegar o vetor com tudo e avalia o equ em outro vetor
+void avaliarEqu(){
+    int i;
+    int j;
+    string strEqu = "EQU";
+    string stringBusca;
+    string stringSubs;
+
+
+    for(i=0;i<vetorTokensTratado.size();i++){
+        for(j=0;j<vetorTokensTratado[i].size();j++){
+            if(pre_parser::stringCompareI(vetorTokensTratado[i][j],strEqu)){
+                stringBusca = vetorTokensTratado[i][j-1];
+                stringSubs = vetorTokensTratado[i][j+1];
+
+                vetorTokensTratado.erase(vetorTokensTratado.begin()+i);
+                i--;
+
+                stringBusca.erase(stringBusca.find(':'));
+
+                substituir(stringBusca,stringSubs);
+
+            }
+        }
+    }
+}
 
 // Cria vetor de tokens separados por espacos e \n
 vector<string> tokens(string str){
@@ -122,7 +203,7 @@ int primeiraPassagem(char* input){
             }
             vetorTokensInput.push_back(line);
         }
-        else{
+        else if(fpInput.eof()){
             vetorTokensInput.push_back(endline);
 
         }
@@ -137,35 +218,35 @@ int primeiraPassagem(char* input){
 
 
 int main(int argc, char* argv[]){
-
-    ofstream fpPre;
-    ofstream fpObj;
-
     if(argc != 4){
         cout << "Erro! Numero de argumentos diferente do esperado." << endl;
         exit(1);
     }
 
-    // Arquivos que serao manipulados
-    fpPre.open(argv[2]);    //.pre
-    fpObj.open(argv[3]);    //.obj
-
     primeiraPassagem(argv[1]);
 
-//    string dani = "dani linda lol ;jlkaf jlfkja jlk";
-//    vector<string> vec = tokens(dani);
-//    vec = ignoraComentarios(vec);
-//
-//    for(unsigned int i = 0; i<vec.size(); i++) {
-//        cout << vec[i] << endl;
-//    }
-
-
+    cout << "tabela de memoria:\n\n";
     pre_parser::verificarMap(tabelaDeRotulos);
 
-    //pre_parser::verificarVector(vetorTokensInput);
+    cout << "\nVetor antes de ser tratado\n\n";
+    pre_parser::verificarVector(vetorTokensInput);
 
-    fpObj.close();
+
+    //comecar tratamento
+    vetorTokensTratado = vetorTokensInput;
+
+    avaliarEqu();
+    avaliarIf();
+
+    cout << "\nVetor depois de avaliado equ\n\n";
+    pre_parser::verificarVector(vetorTokensTratado);
+
+    limparLinhasVazias();
+
+    pre_parser::gerarPreProcessado(vetorTokensTratado,argv[2]);
+
+    testes_pre_parser();
+
 
     return 0;
 }

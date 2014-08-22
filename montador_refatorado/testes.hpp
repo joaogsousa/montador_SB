@@ -8,6 +8,6 @@
 using namespace std;
 using namespace pre_parser;
 
-void testes_pre_parser(vector<string> vetor);
+void testes_pre_parser();
 
 #endif //TESTES_HPP
