@@ -43,7 +43,7 @@ namespace pre_parser{
     }
 
     int isOperando(string string1){
-        if((string[0] == 'N' || string[0] == 'n') && !pre_parser::isLabel(string)){
+        if((string1[0] == 'N' || string1[0] == 'n') && !pre_parser::isLabel(string1)){
             return 1;
 
         }else{

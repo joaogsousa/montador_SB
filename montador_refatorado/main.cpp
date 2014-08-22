@@ -25,26 +25,8 @@ void verificarVetor(vector<string> vetor){
 
 
 
-string readFile(string filename) {
-	string content;
-	long int size;
-    FILE* file = fopen(filename, "r");
-    if(file == NULL)
-        return NULL;
 
-    fseek(file, 0, SEEK_END);
-    size = ftell(file);
-    rewind(file);
-
-    content = (string)malloc(size);
-
-    fread(content, 1, size, file);
-
-    return content;
-}
-
-
-int main(int argc, string argv[]){
+int main(int argc, char* argv[]){
 
     ifstream fpInput;
     ofstream fpPre;
