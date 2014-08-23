@@ -4,189 +4,253 @@
 #include <string>
 #include <cstdlib>
 #include <vector>
-#include <cstring>
+#include <string>
 #include "testes.hpp"
 #include "pre_parser.hpp"
-
+#include <cstring>
+#include <map>
 
 using namespace std;
 using namespace pre_parser;
 
-//remover os ifs e as linhas que dever ser tiradas
-vector<char*> removerLinhas(vector<char*> vetor){
+map<string, int> tabelaDeRotulos;
+vector< vector <string> > vetorTokensInput;
+vector< vector <string> > vetorTokensTratado;
+int totErros = 0;
+
+
+void limparLinhasVazias(){
     int i;
-    int numToRemove;
-    int indice;
 
-    for(i=0;i<vetor.size();i++){
-        numToRemove = 0;
-        if(pre_parser::stringCompareI(vetor[i],"IF")){
-            if(pre_parser::stringCompareI(vetor[i+1],"0")){
-                //remover a proxima linha
-                if(pre_parser::isLabel(vetor[i+2])){
-                    numToRemove++;
-                    indice = i+3;
+    for(i=0;i<vetorTokensTratado.size();i++){
+        if(vetorTokensTratado[i][0] == "\n"){
+            vetorTokensTratado.erase(vetorTokensTratado.begin() + i);
+            i--;
+        }
+
+    }
+}
+
+void avaliarIf(){
+    int i;
+    int j;
+    string stringIf = "IF";
+    string zero = "0";
+
+    for(i=0;i<vetorTokensTratado.size();i++){
+        for(j=0;j<vetorTokensTratado[i].size();j++){
+            if(pre_parser::stringCompareI(vetorTokensTratado[i][j],stringIf)){
+                if(pre_parser::stringCompareI(vetorTokensTratado[i][j+1],zero)){
+                    vetorTokensTratado.erase(vetorTokensTratado.begin()+i+1);
                 }
-                else{
-                    indice = i+2;
-                }
-                numToRemove++; //representa o mnemonico da instrucao
-                numToRemove = numToRemove + pre_parser::numOperandos(vetor[indice]);
-
-
-                vetor.erase(vetor.begin()+i+2,vetor.begin()+i+2+numToRemove);
+                vetorTokensTratado.erase(vetorTokensTratado.begin()+i);
+                i--;
             }
-            vetor.erase(vetor.begin()+i,vetor.begin()+i+2);
-            i --;
         }
-
     }
-
-
-    return vetor;
 
 }
 
 
-// Percorre e imprime o vetor (Testes)
-void verificarVetor(vector<char*> vetor){
-    unsigned i;
-    for(i=0; i<vetor.size(); i++){
-        cout << vetor[i] << endl;
+//substitue ocorrencia de string no vetor
+void substituir(string busca,string subs){
+    int i;
+    int j;
+
+
+    for(i=0;i<vetorTokensTratado.size();i++){
+        for(j=0;j<vetorTokensTratado[i].size();j++){
+            if(pre_parser::stringCompareI(vetorTokensTratado[i][j],busca)){
+                vetorTokensTratado[i][j] = subs;
+            }
+        }
     }
 
 }
 
-// Percorre o vetor e substitui as ocorrencias de vetor[i-1] pelo valor de vetor[i+1]
-vector<char*> substituir(vector<char*> vetorTokens, int i){
-    char* procurar = vetorTokens[i-1];
-    char* novo = vetorTokens[i+1];
-    unsigned j;
-    int arrumado = 0;
+//pegar o vetor com tudo e avalia o equ em outro vetor
+void avaliarEqu(){
+    int i;
+    int j;
+    string strEqu = "EQU";
+    string stringBusca;
+    string stringSubs;
 
-    // Retirando ':' da string a ser substituida
-    j = 0;
-    while(!arrumado){
-        if(procurar[j] == ':'){
-            procurar[j] = '\0';
-            arrumado = 1;
+
+    for(i=0;i<vetorTokensTratado.size();i++){
+        for(j=0;j<vetorTokensTratado[i].size();j++){
+            if(pre_parser::stringCompareI(vetorTokensTratado[i][j],strEqu)){
+                stringBusca = vetorTokensTratado[i][j-1];
+                stringSubs = vetorTokensTratado[i][j+1];
+
+                vetorTokensTratado.erase(vetorTokensTratado.begin()+i);
+                i--;
+
+                stringBusca.erase(stringBusca.find(':'));
+
+                substituir(stringBusca,stringSubs);
+
+            }
         }
-        j++;
     }
-
-    //Percorrendo o vetor e substituindo as ocorrencias
-    for(j=0; j<vetorTokens.size(); j++){
-        if(pre_parser::stringCompareI(vetorTokens[j], procurar)){
-            vetorTokens[j] = novo;
-        }
-    }
-
-    return vetorTokens;
-
-}
-
-char* readFile(char* filename) {
-	char* content;
-	long int size;
-    FILE* file = fopen(filename, "r");
-    if(file == NULL)
-        return NULL;
-
-    fseek(file, 0, SEEK_END);
-    size = ftell(file);
-    rewind(file);
-
-    content = (char*)malloc(size);
-
-    fread(content, 1, size, file);
-
-    return content;
 }
 
 // Cria vetor de tokens separados por espacos e \n
-vector<char*> tokens(char* arquivo){
-    char* stringTotal;
-    vector<char*> vetorTokens;
+vector<string> tokens(string str){
+    vector<string> vetorTokens;
     char* pch;
+    char * aux = new char[str.size() + 1];
+    string pch_string;
 
-    stringTotal = readFile(arquivo);
+    copy(str.begin(), str.end(), aux);
+    aux[str.size()] = '\0';
 
-    pch = strtok (stringTotal," ,'\n'");
-    while (pch != NULL)
-    {
-        //printf ("%s\n",pch);
-        vetorTokens.push_back(pch);
-        pch = strtok (NULL, " ,'\n'");
+    pch = strtok (aux," ,");
+    pch_string = pch;
+
+
+    while(pch != NULL) {
+        vetorTokens.push_back(pch_string);
+        pch = strtok (NULL, " ,");
+        if(pch != NULL) {
+            pch_string = pch;
+        }
     }
 
     return vetorTokens;
 
 }
 
-int main(int argc, char * argv[]){
+vector<string> ignoraComentarios(vector<string> line) {
+    unsigned int i = 0;
+    int achou = 0;
+    string aux;
 
+    while(!achou && i < line.size()){
+        aux = line[i];
+        if(aux[0] == ';') {
+            achou = 1;
+            line.erase(line.begin() + i, line.begin() + i + (line.size() - i));
+        }
+        i++;
+    }
+    return line;
+}
+
+int primeiraPassagem(char* input){
     ifstream fpInput;
-    ofstream fpPre;
-    ofstream fpObj;
+    string buffer;
+    int endereco;
+    int linha;
+    vector<string> lineToTokens;
+    vector<string> line;
+    int indice;
+    int erro = 0;
+    vector<string> endline;
 
-    vector<char*> vetorTokens;
+    endline.push_back("\n");
 
-    char buffer;
-    unsigned i;
 
+
+    linha = 0;
+    endereco = 0;
+
+    fpInput.open(input);
+
+
+    if(!fpInput.is_open()){
+        cout << "Arquivo de input não existe" << endl;
+        exit(1);
+
+    }
+
+    while(!fpInput.eof()){
+        getline(fpInput, buffer);
+        if(!buffer.empty()) {
+            lineToTokens = tokens(buffer);
+            line = ignoraComentarios(lineToTokens);
+
+            if(isLabel(line[0])) {
+                if(tabelaDeRotulos.find(line[0]) != tabelaDeRotulos.end()){
+                    //erro!
+                    cout << "Erro semantico! Dupla definicao de rotulos. Linha: " << linha << endl;
+                    totErros++;
+                    erro = 1;
+                }
+                else {
+                    tabelaDeRotulos.insert(std::pair<string,int>(line[0],endereco));
+                }
+                indice = 1;
+            }
+            else{
+                indice = 0;
+            }
+
+
+            if(pre_parser::isInstruction(line[indice])){
+                endereco = endereco + 1 + pre_parser::numOperandos(line[indice]);
+
+            }
+            else if(isDiretiva(line[indice])){
+                //eh uma diretiva
+                //chamar subrotina
+            }
+            else {
+                //erro
+                cout << "Erro lexico! Operacao ou diretiva invalida. Linha: " << linha <<endl;
+                totErros++;
+                erro = 1;
+            }
+            vetorTokensInput.push_back(line);
+        }
+        else if(fpInput.eof()){
+            vetorTokensInput.push_back(endline);
+
+        }
+
+        linha++;
+    }
+
+    fpInput.close();
+    return erro;
+}
+
+
+
+int main(int argc, char* argv[]){
     if(argc != 4){
         cout << "Erro! Numero de argumentos diferente do esperado." << endl;
         exit(1);
     }
 
-    // Arquivos que serao manipulados
-    fpInput.open(argv[1]);  //.asm
-    fpPre.open(argv[2]);    //.pre
-    fpObj.open(argv[3]);    //.obj
+    primeiraPassagem(argv[1]);
 
-    if(!fpInput.is_open()){
-        cout << "Erro! Nao foi possivel ler o arquivo .asm de entrada." << endl;
-        exit(1);
+    if(totErros) {
+        cout << "\nPre-processamento finalizado com " << totErros << " erros!\n";
     }
 
-    // Removendo comentarios
-    while(!fpInput.eof()) {
-        buffer = fpInput.get();
-        if(buffer == ';') {
-            while(buffer != '\n' && !fpInput.eof()){
-                buffer = fpInput.get();
-            }
-        }
-        if(buffer != EOF)
-            fpPre << buffer ;
-    }
+    cout << "\n**Tabela de memoria:**\n";
+    pre_parser::verificarMap(tabelaDeRotulos);
 
-    fpPre.close();
-
-    /** Lidando com diretivas **/
-
-    vetorTokens = tokens(argv[2]);
-    // Encontra as variaveis inicializadas e as substitui nas instrucoes
-    for(i=0; i<vetorTokens.size(); i++){
-        if(pre_parser::stringCompareI(vetorTokens[i],"EQU")){
-            vetorTokens = substituir(vetorTokens,i);
-            vetorTokens.erase(vetorTokens.begin()+(i-1), vetorTokens.begin()+(i+2));
-            i -= 2;
-        }
-    }
+    cout << "\n**Vetor antes de ser tratado**\n";
+    pre_parser::verificarVector(vetorTokensInput);
 
 
-    vetorTokens = removerLinhas(vetorTokens);
+    //comecar tratamento
+    vetorTokensTratado = vetorTokensInput;
 
-    // Teste do preprocessamento
-    verificarVetor(vetorTokens);
+    avaliarEqu();
+    avaliarIf();
 
-    testes_pre_parser(vetorTokens);
+    cout << "**Vetor depois de avaliado equ**\n";
+    pre_parser::verificarVector(vetorTokensTratado);
 
-    pre_parser::gerarPreProcessado(vetorTokens,argv[2]);
+    limparLinhasVazias();
 
-    fpInput.close();
-    fpObj.close();
+    pre_parser::gerarPreProcessado(vetorTokensTratado,argv[2]);
+
+    testes_pre_parser();
+
 
     return 0;
 }

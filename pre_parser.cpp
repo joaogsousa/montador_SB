@@ -1,17 +1,17 @@
 #include "pre_parser.hpp"
 
 namespace pre_parser{
-    int isPseudo(char* string){
+    int isPseudo(string string1){
 
         return 0;
     }
 
-    int isLabel(char* string){
+    int isLabel(string string1){
         int i;
         i = 0;
 
-        while(string[i] != '\0'){
-            if(string[i] == ':' && string[i+1] == '\0'){
+        while(string1[i] != '\0'){
+            if(string1[i] == ':' && string1[i+1] == '\0'){
                 return 1;
             }
 
@@ -21,7 +21,7 @@ namespace pre_parser{
         return 0;
     }
 
-    int numOperandos(char* instrucao){
+    int numOperandos(string instrucao){
         if(stringCompareI(instrucao,"COPY")){
             return 2;
 
@@ -42,8 +42,8 @@ namespace pre_parser{
         }
     }
 
-    int isOperando(char* string){
-        if((string[0] == 'N' || string[0] == 'n') && !pre_parser::isLabel(string)){
+    int isOperando(string string1){
+        if((string1[0] == 'N' || string1[0] == 'n') && !pre_parser::isLabel(string1)){
             return 1;
 
         }else{
@@ -52,7 +52,7 @@ namespace pre_parser{
     }
 
 
-    vector<char*> getBasicInstFromPseudo(vector<char*> pseudo){
+    vector<string> getBasicInstFromPseudo(vector<string> pseudo){
 
         return pseudo;
     }
@@ -101,10 +101,10 @@ namespace pre_parser{
         return (atoid == atoic);
     }
 
-    int stringCompareI(char * str1, char * str2){
+    int stringCompareI(string str1, string str2){
         int i = 0;
 
-        if(strlen(str1) == strlen(str2)){
+        if(str1.size() == str2.size()){
             while(str1[i] != '\0'){
                 if(!letraCompare(str1[i],str2[i])){
                     return 0;
@@ -121,118 +121,130 @@ namespace pre_parser{
     }
 
 
-    char* isDiretiva(char* string){
-        char* section = "section";
-        char* equ = "equ";
-        char* if_string = "if";
-        char* space = "space";
-        char* const_string = "const";
+    int isDiretiva(string string1){
+        string section("section");
+        string equ("equ");
+        string if_string("if");
+        string space("space");
+        string const_string("const");
 
-        if(stringCompareI(string,section)){
-            return section;
+        if(stringCompareI(string1, section)){
+            return 1;
         }
-        if(stringCompareI(string,equ)){
-            return equ;
+        if(stringCompareI(string1, equ)){
+            return 1;
         }
-        if(stringCompareI(string,if_string)){
-            return if_string;
+        if(stringCompareI(string1, if_string)){
+            return 1;
         }
-        if(stringCompareI(string,space)){
-            return space;
+        if(stringCompareI(string1, space)){
+            return 1;
         }
-        if(stringCompareI(string,const_string)){
-            return const_string;
+        if(stringCompareI(string1, const_string)){
+            return 1;
         }
-        return NULL;
+        return 0;
     }
 
-    char* isInstruction(char* string){
+    int isInstruction(string string1){
 
-        if(stringCompareI(string,"ADD")){
-            return "ADD";
+
+        if(stringCompareI(string1, "ADD")){
+            return 1;
         }
-        if(stringCompareI(string,"SUB")){
-            return "SUB";
+        if(stringCompareI(string1, "SUB")){
+            return 1;
         }
-        if(stringCompareI(string,"MULT")){
-            return "MULT";
+        if(stringCompareI(string1, "MULT")){
+            return 1;
         }
-        if(stringCompareI(string,"DIV")){
-            return "DIV";
+        if(stringCompareI(string1, "DIV")){
+            return 1;
         }
-        if(stringCompareI(string,"JMP")){
-            return "JMP";
+        if(stringCompareI(string1, "JMP")){
+            return 1;
         }
         //mais
-        if(stringCompareI(string,"JMPN")){
-            return "JMPN";
+        if(stringCompareI(string1, "JMPN")){
+            return 1;
         }
-        if(stringCompareI(string,"JMPP")){
-            return "JMPP";
+        if(stringCompareI(string1, "JMPP")){
+            return 1;
         }
-        if(stringCompareI(string,"JMPZ")){
-            return "JMPZ";
+        if(stringCompareI(string1, "JMPZ")){
+            return 1;
         }
-        if(stringCompareI(string,"COPY")){
-            return "COPY";
+        if(stringCompareI(string1, "COPY")){
+            return 1;
         }
-        if(stringCompareI(string,"LOAD")){
-            return "LOAD";
+        if(stringCompareI(string1, "LOAD")){
+            return 1;
         }
         //mais
-        if(stringCompareI(string,"STORE")){
-            return "STORE";
+        if(stringCompareI(string1, "STORE")){
+            return 1;
         }
-        if(stringCompareI(string,"INPUT")){
-            return "INPUT";
+        if(stringCompareI(string1, "INPUT")){
+            return 1;
         }
-        if(stringCompareI(string,"OUTPUT")){
-            return "OUTPUT";
+        if(stringCompareI(string1, "OUTPUT")){
+            return 1;
         }
-        if(stringCompareI(string,"STOP")){
-            return "STOP";
+        if(stringCompareI(string1, "STOP")){
+            return 1;
         }
 
-        return NULL;
+        return 0;
     }
 
-    void gerarPreProcessado(vector<char*> vetorTokens, char* nomeArquivo){
-        ofstream arquivoPre;
+    void verificarMap(map<string,int> mymap){
+        // show content:
+        for (map<string,int>::iterator it=mymap.begin(); it!=mymap.end(); ++it){
+            std::cout << it->first << " => " << it->second << '\n';
+        }
+
+
+    }
+
+
+    void verificarVector(vector<vector<string> > vetorStrings){
         int i;
-        int espaco;
+        int j;
 
-        arquivoPre.open(nomeArquivo);
+        for(i=0;i<vetorStrings.size();i++){
+            for(j=0;j<vetorStrings[i].size();j++){
 
-        for(i=0;i<vetorTokens.size();i++){
-            espaco = 0;
-            arquivoPre << vetorTokens[i];
-            if(stringCompareI(vetorTokens[i],"STOP")){
-                arquivoPre << '\n';
-                espaco = 1;
-
+                cout << vetorStrings[i][j] << " ";
             }
-            if(stringCompareI(vetorTokens[i],"DATA") || stringCompareI(vetorTokens[i],"TEXT")){
-                arquivoPre << '\n';
-                espaco = 1;
-
-            }
-            if(i > 1 && (pre_parser::numOperandos(vetorTokens[i-1]) == 1 || pre_parser::numOperandos(vetorTokens[i-2]) == 2)){
-                arquivoPre << '\n';
-                espaco = 1;
-
-            }
-
-            if(!espaco){
-                arquivoPre << ' ';
-
-            }
-
-
-
+            cout << endl;
         }
 
-        arquivoPre.close();
 
     }
+
+
+    void gerarPreProcessado(vector<vector<string> > vetorStrings,char* arquivoPre){
+        int i;
+        int j;
+        ofstream arquivoSaida(arquivoPre);
+
+
+        for(i=0;i<vetorStrings.size();i++){
+            for(j=0;j<vetorStrings[i].size();j++){
+                arquivoSaida << vetorStrings[i][j];
+                if(j+1<vetorStrings[i].size()){
+                    arquivoSaida << " ";
+                }
+            }
+            arquivoSaida << endl;
+        }
+
+        arquivoSaida.close();
+
+
+
+
+    }
+
 
 };

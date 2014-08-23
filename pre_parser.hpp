@@ -7,24 +7,26 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>
-#include <cstring>
+#include <map>
 
 
 using namespace std;
 
 namespace pre_parser{
-    char* isInstruction(char* string);
-    int isPseudo(char* string);
-    char* isDiretiva(char* string);
-    int isLabel(char* string);
-    int numOperandos(char* instrucao);
-    int isOperando(char* string);
-    vector<char*> getBasicInstFromPseudo(vector<char*> pseudo);
-    int stringCompareI(char * str1, char * str2);
+    int isInstruction(string string1);
+    int isPseudo(string string1);
+    int isDiretiva(string string1);
+    int isLabel(string string1);
+    int numOperandos(string instrucao);
+    int isOperando(string string1);
+    vector<string> getBasicInstFromPseudo(vector<string> pseudo);
+    int stringCompareI(string str1, string str2);
     int letraCompare(char c, char d);
     int isNum(char c);
     int isChar(char c);
-    void gerarPreProcessado(vector<char*> vetorTokens, char* nomeArquivo);
+    void verificarMap(map<string,int> mapa);
+    void verificarVector(vector<vector<string> > vetorStrings);
+    void gerarPreProcessado(vector<vector<string> > vetorStrings,char* arquivoPre);
 };
 
 
