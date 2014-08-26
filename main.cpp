@@ -17,7 +17,98 @@ map<string, int> tabelaDeRotulos;
 vector< vector <string> > vetorTokensInput;
 vector< vector <string> > vetorTokensTratado;
 int totErros = 0;
+map<string,string> tabelaDefines;
 
+
+// Cria vetor de tokens separados por espacos e \n
+vector<string> tokens(string str){
+    vector<string> vetorTokens;
+    char* pch;
+    char * aux = new char[str.size() + 1];
+    string pch_string;
+
+    copy(str.begin(), str.end(), aux);
+    aux[str.size()] = '\0';
+
+    pch = strtok (aux," ,");
+    pch_string = pch;
+
+
+    while(pch != NULL) {
+        vetorTokens.push_back(pch_string);
+        pch = strtok (NULL, " ,");
+        if(pch != NULL) {
+            pch_string = pch;
+        }
+    }
+
+    return vetorTokens;
+
+}
+
+vector<string> ignoraComentarios(vector<string> line) {
+    unsigned int i = 0;
+    int achou = 0;
+    string aux;
+
+    while(!achou && i < line.size()){
+        aux = line[i];
+        if(aux[0] == ';') {
+            achou = 1;
+            line.erase(line.begin() + i, line.begin() + i + (line.size() - i));
+        }
+        i++;
+    }
+    return line;
+}
+
+void gerarTabelaDefines(char* input){
+    ifstream fpInput;
+    string buffer;
+    vector<string> lineToTokens;
+    vector<string> line;
+    int i;
+    string chave;
+    string valor;
+
+    fpInput.open(input);
+
+    tabelaDefines.erase(tabelaDefines.begin(),tabelaDefines.end());
+
+
+    if(!fpInput.is_open()){
+        cout << "Arquivo de input não existe" << endl;
+        exit(1);
+
+    }
+
+    while(!fpInput.eof()){
+        getline(fpInput, buffer);
+        if(!buffer.empty()) {
+            lineToTokens = tokens(buffer);
+            line = ignoraComentarios(lineToTokens);
+
+            for(i=0;i<line.size();i++){
+                if(stringCompareI(line[i],"EQU")){
+                    chave = line[i-1].erase(line[i-1].find(':'));
+                    valor = line[i+1];
+                    tabelaDefines.insert(pair<string,string>(chave,valor));
+                    cout << "inserido chave: " << chave << " valor: " << valor << endl;
+                    cout << "linha: \n" << line[i-1] << " " << line[i] << " " << line[i+1] << " " << endl;
+                }
+
+            }
+
+        }
+
+
+    }
+
+    fpInput.close();
+
+
+
+}
 
 void limparLinhasVazias(){
     int i;
@@ -95,47 +186,7 @@ void avaliarEqu(){
     }
 }
 
-// Cria vetor de tokens separados por espacos e \n
-vector<string> tokens(string str){
-    vector<string> vetorTokens;
-    char* pch;
-    char * aux = new char[str.size() + 1];
-    string pch_string;
 
-    copy(str.begin(), str.end(), aux);
-    aux[str.size()] = '\0';
-
-    pch = strtok (aux," ,");
-    pch_string = pch;
-
-
-    while(pch != NULL) {
-        vetorTokens.push_back(pch_string);
-        pch = strtok (NULL, " ,");
-        if(pch != NULL) {
-            pch_string = pch;
-        }
-    }
-
-    return vetorTokens;
-
-}
-
-vector<string> ignoraComentarios(vector<string> line) {
-    unsigned int i = 0;
-    int achou = 0;
-    string aux;
-
-    while(!achou && i < line.size()){
-        aux = line[i];
-        if(aux[0] == ';') {
-            achou = 1;
-            line.erase(line.begin() + i, line.begin() + i + (line.size() - i));
-        }
-        i++;
-    }
-    return line;
-}
 
 int primeiraPassagem(char* input){
     ifstream fpInput;
@@ -147,12 +198,14 @@ int primeiraPassagem(char* input){
     int indice;
     int erro = 0;
     vector<string> endline;
+    vector<string> linePassada;
+    int tamanhoVetor;
 
     endline.push_back("\n");
 
 
 
-    linha = 0;
+    linha = 1;
     endereco = 0;
 
     fpInput.open(input);
@@ -170,7 +223,7 @@ int primeiraPassagem(char* input){
             lineToTokens = tokens(buffer);
             line = ignoraComentarios(lineToTokens);
 
-            if(isLabel(line[0])) {
+            if(isLabel(line[0]) && !stringCompareI(line[1],"EQU")) {
                 if(tabelaDeRotulos.find(line[0]) != tabelaDeRotulos.end()){
                     //erro!
                     cout << "Erro semantico! Dupla definicao de rotulos. Linha: " << linha << endl;
@@ -188,12 +241,27 @@ int primeiraPassagem(char* input){
 
 
             if(pre_parser::isInstruction(line[indice])){
-                endereco = endereco + 1 + pre_parser::numOperandos(line[indice]);
+                if(!(stringCompareI(linePassada[0],"IF") && stringCompareI(linePassada[1],"0"))
+                   &&  !(stringCompareI(linePassada[0],"IF") && stringCompareI(tabelaDefines[linePassada[1]],"0"))  ){
+                    endereco = endereco + 1 + pre_parser::numOperandos(line[indice]);
+                }
 
             }
             else if(isDiretiva(line[indice])){
-                //eh uma diretiva
-                //chamar subrotina
+                if(stringCompareI(line[indice],"CONST")){
+                    endereco = endereco + 1;
+
+                }
+                else if(stringCompareI(line[indice],"SPACE")){
+                    if(line.size() == 3){
+                        tamanhoVetor = atoi(line[indice+1].c_str());
+                        endereco = endereco + tamanhoVetor;
+                    }else{
+                        endereco = endereco + 1;
+                    }
+
+
+                }
             }
             else {
                 //erro
@@ -209,6 +277,7 @@ int primeiraPassagem(char* input){
         }
 
         linha++;
+        linePassada = line;
     }
 
     fpInput.close();
@@ -223,6 +292,8 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
+    gerarTabelaDefines(argv[1]);
+
     primeiraPassagem(argv[1]);
 
     if(totErros) {
@@ -231,6 +302,9 @@ int main(int argc, char* argv[]){
 
     cout << "\n**Tabela de memoria:**\n";
     pre_parser::verificarMap(tabelaDeRotulos);
+
+    cout << "\n**Tabela de defines:**\n";
+    pre_parser::verificarMapString(tabelaDefines);
 
     cout << "\n**Vetor antes de ser tratado**\n";
     pre_parser::verificarVector(vetorTokensInput);

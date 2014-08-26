@@ -207,6 +207,16 @@ namespace pre_parser{
     }
 
 
+     void verificarMapString(map<string,string> mymap){
+        // show content:
+        for (map<string,string>::iterator it=mymap.begin(); it!=mymap.end(); ++it){
+            std::cout << it->first << " => " << it->second << '\n';
+        }
+
+
+    }
+
+
     void verificarVector(vector<vector<string> > vetorStrings){
         int i;
         int j;
