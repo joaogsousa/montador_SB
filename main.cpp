@@ -93,8 +93,6 @@ void gerarTabelaDefines(char* input){
                     chave = line[i-1].erase(line[i-1].find(':'));
                     valor = line[i+1];
                     tabelaDefines.insert(pair<string,string>(chave,valor));
-                    cout << "inserido chave: " << chave << " valor: " << valor << endl;
-                    cout << "linha: \n" << line[i-1] << " " << line[i] << " " << line[i+1] << " " << endl;
                 }
 
             }
@@ -264,10 +262,12 @@ int primeiraPassagem(char* input){
                 }
             }
             else {
-                //erro
-                cout << "Erro lexico! Operacao ou diretiva invalida. Linha: " << linha <<endl;
-                totErros++;
-                erro = 1;
+                if(!isLabel(line[indice])){
+                    //erro
+                    cout << "Erro lexico! Operacao ou diretiva invalida. Linha: " << linha <<endl;
+                    totErros++;
+                    erro = 1;
+                }
             }
             vetorTokensInput.push_back(line);
         }
