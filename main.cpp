@@ -184,7 +184,93 @@ void avaliarEqu(){
     }
 }
 
+int preprocessamento(char* input){
+    int erro=0;
 
+    gerarTabelaDefines(input);
+
+    return erro;
+}
+
+int passagemUnica(char* input, char* output){
+    ifstream fpInput;
+    ofstream fpOutput;
+    string buffer;
+    int endereco;
+    int linha;
+    vector<string> lineToTokens;
+    vector<string> line;
+    int indice;
+    int erro = 0;
+    vector<string> endline;
+    vector<string> linePassada;
+    int tamanhoVetor;
+    int numOp;
+    int opCode;
+
+    endline.push_back("\n");
+
+    linha = 1;
+    endereco = 0;
+
+    fpInput.open(input);
+    fpOutput.open(output);
+
+
+    if(!fpInput.is_open()){
+        cout << "Arquivo de input não existe" << endl;
+        exit(1);
+
+    }
+
+    while(!fpInput.eof()){
+        getline(fpInput, buffer);
+        if(!buffer.empty()){
+            lineToTokens = tokens(buffer);
+            line = ignoraComentarios(lineToTokens);
+
+            // Verifica se eh definicao de rotulo
+            if(isLabel(line[0])){
+                if(tabelaDeRotulos.find(line[0]) != tabelaDeRotulos.end()){
+                    //erro, rotulo redefinido
+                    cout << "Erro semantico! Linha: " << linha << endl;
+                    totErros++;
+                    erro = 1;
+                }
+                else{
+                    // Insere novo rotulo na tabela de simbolos
+                    tabelaDeRotulos.insert(std::pair<string,int>(line[0],endereco));
+                }
+                indice = 1;
+            } 
+            else{
+                indice = 0;
+            }
+
+            // Verifica se eh uma operacao
+            opCode = pre_parser::isInstruction(line[indice]); //Verifica se eh instrucao e qual
+            if(opCode != 0){
+
+                numOp = pre_parser::numOperandosByOpCode(opCode);
+                endereco = endereco + 1 + numOp; //Atualizacao do contador de programa
+                if(line.size() != numOp + indice + 1){
+                    // Erro! Numero de operandos invalido!
+                    cout << "Erro sintatico! Linha: " << linha << endl;
+                }
+                else if(numOp > 0){
+                    //TODO: tratar os simbolos nao definidos
+                }
+            }
+
+
+        }
+        linha++;
+    }
+
+    fpInput.close();
+    fpOutput.close();
+    return erro;
+}
 
 int primeiraPassagem(char* input){
     ifstream fpInput;
@@ -273,7 +359,6 @@ int primeiraPassagem(char* input){
         }
         else if(fpInput.eof()){
             vetorTokensInput.push_back(endline);
-
         }
 
         linha++;
@@ -292,9 +377,11 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-    gerarTabelaDefines(argv[1]);
+    preprocessamento(argv[1]);
 
-    primeiraPassagem(argv[1]);
+    //primeiraPassagem(argv[1]);
+
+    passagemUnica(argv[1], argv[3]);
 
     if(totErros) {
         cout << "\nPre-processamento finalizado com " << totErros << " erros!\n";

@@ -17,6 +17,7 @@ namespace pre_parser{
     int isPseudo(string string1);
     int isDiretiva(string string1);
     int isLabel(string string1);
+    int numOperandosByOpCode(int opCode);
     int numOperandos(string instrucao);
     int isOperando(string string1);
     vector<string> getBasicInstFromPseudo(vector<string> pseudo);

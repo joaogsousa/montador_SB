@@ -21,6 +21,21 @@ namespace pre_parser{
         return 0;
     }
 
+    int numOperandosByOpCode(int opCode){
+        if(opCode == 9){
+            return 2;
+        }
+        else if(opCode == 14){
+            return 0;
+        }
+        else if(opCode > 0 && opCode < 15){
+            return 1;
+        }
+        else{
+            return -1;
+        }
+    }
+
     int numOperandos(string instrucao){
         if(stringCompareI(instrucao,"COPY")){
             return 2;
@@ -153,45 +168,45 @@ namespace pre_parser{
             return 1;
         }
         if(stringCompareI(string1, "SUB")){
-            return 1;
+            return 2;
         }
         if(stringCompareI(string1, "MULT")){
-            return 1;
+            return 3;
         }
         if(stringCompareI(string1, "DIV")){
-            return 1;
+            return 4;
         }
         if(stringCompareI(string1, "JMP")){
-            return 1;
+            return 5;
         }
         //mais
         if(stringCompareI(string1, "JMPN")){
-            return 1;
+            return 6;
         }
         if(stringCompareI(string1, "JMPP")){
-            return 1;
+            return 7;
         }
         if(stringCompareI(string1, "JMPZ")){
-            return 1;
+            return 8;
         }
         if(stringCompareI(string1, "COPY")){
-            return 1;
+            return 9;
         }
         if(stringCompareI(string1, "LOAD")){
-            return 1;
+            return 10;
         }
         //mais
         if(stringCompareI(string1, "STORE")){
-            return 1;
+            return 11;
         }
         if(stringCompareI(string1, "INPUT")){
-            return 1;
+            return 12;
         }
         if(stringCompareI(string1, "OUTPUT")){
-            return 1;
+            return 13;
         }
         if(stringCompareI(string1, "STOP")){
-            return 1;
+            return 14;
         }
 
         return 0;
