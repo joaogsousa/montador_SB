@@ -184,10 +184,20 @@ void avaliarEqu(){
     }
 }
 
-int preprocessamento(char* input){
+int preprocessamento(char* input, char* output){
+    ifstream fpInput;
+    ofstream fpOutput;
     int erro=0;
 
     gerarTabelaDefines(input);
+
+    return erro;
+}
+
+int macro(char* input, char* output){
+    ifstream fpInput;
+    ofstream fpOutput;
+    int erro = 0;
 
     return erro;
 }
@@ -370,18 +380,35 @@ int primeiraPassagem(char* input){
 }
 
 
-
 int main(int argc, char* argv[]){
+    char * outPre = "outPre\0";
+    char * outMacro = "outMacro\0";
+
     if(argc != 4){
         cout << "Erro! Numero de argumentos diferente do esperado." << endl;
         exit(1);
     }
 
-    preprocessamento(argv[1]);
+
+    if(!strcmp(argv[1], "-p")){
+        preprocessamento(argv[2], argv[3]);
+    }
+    else if(!strcmp(argv[1], "-m")){
+        preprocessamento(argv[2],outPre);
+        macro(outPre, argv[3]);
+    }
+    else if(!strcmp(argv[1], "-o")){
+        preprocessamento(argv[2], outPre);
+        macro(outPre, outMacro);
+        passagemUnica(outMacro, argv[3]);
+    }
+    else {
+        // Usuario nao informou corretamente o tipo de operacao >> encerrar programa!
+        cout << "Erro! Tipo de operacao nao reconhecido." << endl;
+        return 1;
+    }
 
     //primeiraPassagem(argv[1]);
-
-    passagemUnica(argv[1], argv[3]);
 
     if(totErros) {
         cout << "\nPre-processamento finalizado com " << totErros << " erros!\n";
