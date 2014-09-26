@@ -6,3 +6,4 @@
 - terminar o pre-processamento
 - lidar com macros
 - criar lista de enderecos de uso dos simbolos nao definidos
+- inicializar as listas com vazio

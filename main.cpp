@@ -29,6 +29,13 @@ int totErros = 0;
 map<string,string> tabelaDefines;
 
 
+//Apagar dois pontos dos rotulos
+string apagaDoisPontos(string str){
+    string a = str;
+    return a.erase(a.find(':'));
+
+}
+
 // Cria vetor de tokens separados por espacos e \n
 vector<string> tokens(string str){
     vector<string> vetorTokens;
@@ -215,19 +222,23 @@ int passagemUnica(char* input, char* output){
     ifstream fpInput;
     ofstream fpOutput;
     string buffer;
+    string labelTratado;
+    string operando;
+    int i;
     int endereco;
     int linha;
     vector<string> lineToTokens;
     vector<string> line;
     int indice;
     int erro = 0;
+    int find;
     vector<string> endline;
     vector<string> linePassada;
     int tamanhoVetor;
     int numOp;
     int opCode;
     rotulo symbol;
-
+    list<int> listaux;
     endline.push_back("\n");
 
     linha = 1;
@@ -245,33 +256,47 @@ int passagemUnica(char* input, char* output){
 
     while(!fpInput.eof()){
         getline(fpInput, buffer);
+        find = 0;
         if(!buffer.empty()){
             lineToTokens = tokens(buffer);
             line = ignoraComentarios(lineToTokens);
 
             // Verifica se eh definicao de rotulo
             if(isLabel(line[0])){
-                for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++)
-                    if(it->first == line[0]){
-                        symbol = it->second;
-                        if(symbol.defined == 1) {
-                            //erro, rotulo redefinido
-                            cout << "Erro semantico! Linha: " << linha << endl;
-                            totErros++;
-                            erro = 1;
-                        }
-                        else{
-                            it->second.defined = 1;
-                        }
-                    }
-                else{
-                    // Insere novo rotulo na tabela de simbolos
+                labelTratado = apagaDoisPontos(line[0]);
+                if(tabelaDeRotulos.empty()){
                     symbol.value = endereco;
                     symbol.defined = 1;
-                    tabelaDeRotulos.insert(pair<string,rotulo>(line[0],symbol));
+                    tabelaDeRotulos.insert(pair<string,rotulo>(labelTratado,symbol));
+                }
+                else{
+                    for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
+                        if(it->first == labelTratado){
+                            symbol = it->second;
+                            if(symbol.defined == 1) {
+                                //erro, rotulo redefinido
+                                cout << "Erro semantico! Linha: " << linha << endl;
+                                totErros++;
+                                erro = 1;
+                            }
+                            else{
+                                it->second.defined = 1;
+                                it->second.value = endereco;
+                            }
+                            find = 1;
+                            break;
+                        }
+                    }
+                    if(!find){
+                        // Insere novo rotulo na tabela de simbolos
+                        symbol.value = endereco;
+                        symbol.defined = 1;
+                        symbol.use = listaux;
+                        tabelaDeRotulos.insert(pair<string,rotulo>(labelTratado,symbol));
+                    }
                 }
                 indice = 1;
-            } 
+            }
             else{
                 indice = 0;
             }
@@ -279,19 +304,51 @@ int passagemUnica(char* input, char* output){
             // Verifica se eh uma operacao
             opCode = pre_parser::isInstruction(line[indice]); //Verifica se eh instrucao e qual
             if(opCode != 0){
-
                 numOp = pre_parser::numOperandosByOpCode(opCode);
-                endereco = endereco + 1 + numOp; //Atualizacao do contador de programa
                 if(line.size() != numOp + indice + 1){
                     // Erro! Numero de operandos invalido!
                     cout << "Erro sintatico! Linha: " << linha << endl;
                 }
                 else if(numOp > 0){
                     //TODO: tratar os simbolos nao definidos
+                    find = 0;
+                    for(i=0; i<numOp; i++){
+                        operando = line[indice+i+1];
+                        if(tabelaDeRotulos.empty()){
+                            symbol.defined = 0;
+                            symbol.value = 0;
+                            symbol.use = listaux;
+                            symbol.use.push_back(endereco+i+1);
+                            tabelaDeRotulos.insert(pair<string,rotulo>(operando,symbol));
+                        }
+                        else{
+                            for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
+                                if(it->first == operando){
+                                    if(it->second.defined){
+                                        //mete no codigo
+                                    }
+                                    else{
+                                        it->second.use.push_back(endereco+i+1);
+                                    }
+                                    find = 1;
+                                    break;
+                                }
+                            }
+                            if(!find){
+                                symbol.defined = 0;
+                                symbol.value = 0;
+                                symbol.use = listaux;
+                                symbol.use.push_back(endereco+i+1);
+                                tabelaDeRotulos.insert(pair<string,rotulo>(operando,symbol));
+                            }
+                        }
+                    }
                 }
+                endereco = endereco + 1 + numOp;
             }
-
-
+            else{
+                cout << "Erro lexico! Linha: " << linha << endl;
+            }
         }
         linha++;
     }
@@ -410,7 +467,6 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-
     if(!strcmp(argv[1], "-p")){
         preprocessamento(argv[2], argv[3]);
     }
@@ -429,7 +485,7 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    //primeiraPassagem(argv[1]);
+    primeiraPassagem(argv[1]);
 
     if(totErros) {
         cout << "\nPre-processamento finalizado com " << totErros << " erros!\n";
