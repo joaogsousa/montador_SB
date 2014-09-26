@@ -5,15 +5,24 @@
 #include <cstdlib>
 #include <vector>
 #include <string>
-#include "testes.hpp"
-#include "pre_parser.hpp"
 #include <cstring>
 #include <map>
+#include <list>
+#include "testes.hpp"
+#include "pre_parser.hpp"
 
 using namespace std;
 using namespace pre_parser;
 
-map<string, int> tabelaDeRotulos;
+typedef struct rotulo
+{
+    int defined;
+    int value;
+    list<int> use;
+}rotulo;
+
+map<string, int> tabelaDeRotulos1;
+map<string, rotulo> tabelaDeRotulos;
 vector< vector <string> > vetorTokensInput;
 vector< vector <string> > vetorTokensTratado;
 int totErros = 0;
@@ -217,6 +226,7 @@ int passagemUnica(char* input, char* output){
     int tamanhoVetor;
     int numOp;
     int opCode;
+    rotulo symbol;
 
     endline.push_back("\n");
 
@@ -241,15 +251,24 @@ int passagemUnica(char* input, char* output){
 
             // Verifica se eh definicao de rotulo
             if(isLabel(line[0])){
-                if(tabelaDeRotulos.find(line[0]) != tabelaDeRotulos.end()){
-                    //erro, rotulo redefinido
-                    cout << "Erro semantico! Linha: " << linha << endl;
-                    totErros++;
-                    erro = 1;
-                }
+                for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++)
+                    if(it->first == line[0]){
+                        symbol = it->second;
+                        if(symbol.defined == 1) {
+                            //erro, rotulo redefinido
+                            cout << "Erro semantico! Linha: " << linha << endl;
+                            totErros++;
+                            erro = 1;
+                        }
+                        else{
+                            it->second.defined = 1;
+                        }
+                    }
                 else{
                     // Insere novo rotulo na tabela de simbolos
-                    tabelaDeRotulos.insert(std::pair<string,int>(line[0],endereco));
+                    symbol.value = endereco;
+                    symbol.defined = 1;
+                    tabelaDeRotulos.insert(pair<string,rotulo>(line[0],symbol));
                 }
                 indice = 1;
             } 
@@ -318,14 +337,14 @@ int primeiraPassagem(char* input){
             line = ignoraComentarios(lineToTokens);
 
             if(isLabel(line[0]) && !stringCompareI(line[1],"EQU")) {
-                if(tabelaDeRotulos.find(line[0]) != tabelaDeRotulos.end()){
+                if(tabelaDeRotulos1.find(line[0]) != tabelaDeRotulos1.end()){
                     //erro!
                     cout << "Erro semantico! Dupla definicao de rotulos. Linha: " << linha << endl;
                     totErros++;
                     erro = 1;
                 }
                 else {
-                    tabelaDeRotulos.insert(std::pair<string,int>(line[0],endereco));
+                    tabelaDeRotulos1.insert(std::pair<string,int>(line[0],endereco));
                 }
                 indice = 1;
             }
@@ -381,8 +400,10 @@ int primeiraPassagem(char* input){
 
 
 int main(int argc, char* argv[]){
-    char * outPre = "outPre\0";
-    char * outMacro = "outMacro\0";
+    char * outPre = new char[7];
+    char * outMacro = new char[9];
+    strcpy(outPre, "outPre\0");
+    strcpy(outMacro, "outMacro\0");
 
     if(argc != 4){
         cout << "Erro! Numero de argumentos diferente do esperado." << endl;
@@ -415,7 +436,7 @@ int main(int argc, char* argv[]){
     }
 
     cout << "\n**Tabela de memoria:**\n";
-    pre_parser::verificarMap(tabelaDeRotulos);
+    pre_parser::verificarMap(tabelaDeRotulos1);
 
     cout << "\n**Tabela de defines:**\n";
     pre_parser::verificarMapString(tabelaDefines);

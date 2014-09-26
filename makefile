@@ -5,7 +5,7 @@ programa: main.o pre_parser.o testes.o pos_parser.o
 	g++ main.o pre_parser.o testes.o pos_parser.o -o montador
 
 main.o: main.cpp
-	g++ main.cpp -c
+	g++ main.cpp -fpermissive -Wwrite-strings -c
 
 pre_parser.o: pre_parser.cpp pre_parser.hpp
 	g++ pre_parser.cpp -c
