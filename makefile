@@ -2,10 +2,10 @@ all: programa
 
 
 programa: main.o pre_parser.o testes.o pos_parser.o
-	g++ main.o pre_parser.o testes.o pos_parser.o -o montador
+	g++ main.o pre_parser.o testes.o pos_parser.o -std=c++11 -o montador
 
 main.o: main.cpp
-	g++ main.cpp -fpermissive -Wwrite-strings -c
+	g++ main.cpp  -std=c++11 -c
 
 pre_parser.o: pre_parser.cpp pre_parser.hpp
 	g++ pre_parser.cpp -c

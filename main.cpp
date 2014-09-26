@@ -240,6 +240,7 @@ int passagemUnica(char* input, char* output){
     rotulo symbol;
     list<int> listaux;
     endline.push_back("\n");
+    string strParaArquivo;
 
     linha = 1;
     endereco = 0;
@@ -255,6 +256,7 @@ int passagemUnica(char* input, char* output){
     }
 
     while(!fpInput.eof()){
+        strParaArquivo = "";
         getline(fpInput, buffer);
         find = 0;
         if(!buffer.empty()){
@@ -305,6 +307,8 @@ int passagemUnica(char* input, char* output){
             opCode = pre_parser::isInstruction(line[indice]); //Verifica se eh instrucao e qual
             if(opCode != 0){
                 numOp = pre_parser::numOperandosByOpCode(opCode);
+                strParaArquivo += to_string(opCode);
+
                 if(line.size() != numOp + indice + 1){
                     // Erro! Numero de operandos invalido!
                     cout << "Erro sintatico! Linha: " << linha << endl;
@@ -320,15 +324,22 @@ int passagemUnica(char* input, char* output){
                             symbol.use = listaux;
                             symbol.use.push_back(endereco+i+1);
                             tabelaDeRotulos.insert(pair<string,rotulo>(operando,symbol));
+                            strParaArquivo += " ";
+                            strParaArquivo += to_string(0);
                         }
                         else{
                             for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
                                 if(it->first == operando){
                                     if(it->second.defined){
                                         //mete no codigo
+                                        strParaArquivo += " ";
+                                        strParaArquivo += to_string(it->second.value);
+
                                     }
                                     else{
                                         it->second.use.push_back(endereco+i+1);
+                                        strParaArquivo += " ";
+                                        strParaArquivo += to_string(0);
                                     }
                                     find = 1;
                                     break;
@@ -340,6 +351,8 @@ int passagemUnica(char* input, char* output){
                                 symbol.use = listaux;
                                 symbol.use.push_back(endereco+i+1);
                                 tabelaDeRotulos.insert(pair<string,rotulo>(operando,symbol));
+                                strParaArquivo += " ";
+                                strParaArquivo += to_string(0);
                             }
                         }
                     }
@@ -351,6 +364,8 @@ int passagemUnica(char* input, char* output){
             }
         }
         linha++;
+        strParaArquivo += " ";
+        fpOutput << strParaArquivo;
     }
 
     fpInput.close();
@@ -467,54 +482,55 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-    if(!strcmp(argv[1], "-p")){
-        preprocessamento(argv[2], argv[3]);
-    }
-    else if(!strcmp(argv[1], "-m")){
-        preprocessamento(argv[2],outPre);
-        macro(outPre, argv[3]);
-    }
-    else if(!strcmp(argv[1], "-o")){
-        preprocessamento(argv[2], outPre);
-        macro(outPre, outMacro);
-        passagemUnica(outMacro, argv[3]);
-    }
-    else {
-        // Usuario nao informou corretamente o tipo de operacao >> encerrar programa!
-        cout << "Erro! Tipo de operacao nao reconhecido." << endl;
-        return 1;
-    }
+    passagemUnica(argv[2], argv[3]);
 
-    primeiraPassagem(argv[1]);
-
-    if(totErros) {
-        cout << "\nPre-processamento finalizado com " << totErros << " erros!\n";
-    }
-
-    cout << "\n**Tabela de memoria:**\n";
-    pre_parser::verificarMap(tabelaDeRotulos1);
-
-    cout << "\n**Tabela de defines:**\n";
-    pre_parser::verificarMapString(tabelaDefines);
-
-    cout << "\n**Vetor antes de ser tratado**\n";
-    pre_parser::verificarVector(vetorTokensInput);
+    // if(!strcmp(argv[1], "-p")){
+    //     preprocessamento(argv[2], argv[3]);
+    // }
+    // else if(!strcmp(argv[1], "-m")){
+    //     preprocessamento(argv[2],outPre);
+    //     macro(outPre, argv[3]);
+    // }
+    // else if(!strcmp(argv[1], "-o")){
+    //     preprocessamento(argv[2], outPre);
+    //     macro(outPre, outMacro);
+    //     passagemUnica(outMacro, argv[3]);
+    // }
+    // else {
+    //     // Usuario nao informou corretamente o tipo de operacao >> encerrar programa!
+    //     cout << "Erro! Tipo de operacao nao reconhecido." << endl;
+    //     return 1;
+    // }
 
 
-    //comecar tratamento
-    vetorTokensTratado = vetorTokensInput;
+    // if(totErros) {
+    //     cout << "\nPre-processamento finalizado com " << totErros << " erros!\n";
+    // }
 
-    avaliarEqu();
-    avaliarIf();
+    // cout << "\n**Tabela de memoria:**\n";
+    // pre_parser::verificarMap(tabelaDeRotulos1);
 
-    cout << "**Vetor depois de avaliado equ**\n";
-    pre_parser::verificarVector(vetorTokensTratado);
+    // cout << "\n**Tabela de defines:**\n";
+    // pre_parser::verificarMapString(tabelaDefines);
 
-    limparLinhasVazias();
+    // cout << "\n**Vetor antes de ser tratado**\n";
+    // pre_parser::verificarVector(vetorTokensInput);
 
-    pre_parser::gerarPreProcessado(vetorTokensTratado,argv[2]);
 
-    testes_pre_parser();
+    // //comecar tratamento
+    // vetorTokensTratado = vetorTokensInput;
+
+    // avaliarEqu();
+    // avaliarIf();
+
+    // cout << "**Vetor depois de avaliado equ**\n";
+    // pre_parser::verificarVector(vetorTokensTratado);
+
+    // limparLinhasVazias();
+
+    // pre_parser::gerarPreProcessado(vetorTokensTratado,argv[2]);
+
+    // testes_pre_parser();
 
 
     return 0;
