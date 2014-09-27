@@ -8,7 +8,6 @@
 #include <cstring>
 #include <map>
 #include <list>
-#include "testes.hpp"
 #include "pre_parser.hpp"
 
 using namespace std;
@@ -482,55 +481,30 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-    passagemUnica(argv[2], argv[3]);
+    //passagemUnica(argv[2], argv[3]);
 
-    // if(!strcmp(argv[1], "-p")){
-    //     preprocessamento(argv[2], argv[3]);
-    // }
-    // else if(!strcmp(argv[1], "-m")){
-    //     preprocessamento(argv[2],outPre);
-    //     macro(outPre, argv[3]);
-    // }
-    // else if(!strcmp(argv[1], "-o")){
-    //     preprocessamento(argv[2], outPre);
-    //     macro(outPre, outMacro);
-    //     passagemUnica(outMacro, argv[3]);
-    // }
-    // else {
-    //     // Usuario nao informou corretamente o tipo de operacao >> encerrar programa!
-    //     cout << "Erro! Tipo de operacao nao reconhecido." << endl;
-    //     return 1;
-    // }
-
-
-    // if(totErros) {
-    //     cout << "\nPre-processamento finalizado com " << totErros << " erros!\n";
-    // }
-
-    // cout << "\n**Tabela de memoria:**\n";
-    // pre_parser::verificarMap(tabelaDeRotulos1);
-
-    // cout << "\n**Tabela de defines:**\n";
-    // pre_parser::verificarMapString(tabelaDefines);
-
-    // cout << "\n**Vetor antes de ser tratado**\n";
-    // pre_parser::verificarVector(vetorTokensInput);
+     if(!strcmp(argv[1], "-p")){
+         preprocessamento(argv[2], argv[3]);
+     }
+     else if(!strcmp(argv[1], "-m")){
+         preprocessamento(argv[2],outPre);
+         macro(outPre, argv[3]);
+     }
+     else if(!strcmp(argv[1], "-o")){
+         preprocessamento(argv[2], outPre);
+         macro(outPre, outMacro);
+         passagemUnica(outMacro, argv[3]);
+     }
+     else {
+         // Usuario nao informou corretamente o tipo de operacao >> encerrar programa!
+         cout << "Erro! Tipo de operacao nao reconhecido." << endl;
+         return 1;
+     }
 
 
-    // //comecar tratamento
-    // vetorTokensTratado = vetorTokensInput;
 
-    // avaliarEqu();
-    // avaliarIf();
 
-    // cout << "**Vetor depois de avaliado equ**\n";
-    // pre_parser::verificarVector(vetorTokensTratado);
 
-    // limparLinhasVazias();
-
-    // pre_parser::gerarPreProcessado(vetorTokensTratado,argv[2]);
-
-    // testes_pre_parser();
 
 
     return 0;
