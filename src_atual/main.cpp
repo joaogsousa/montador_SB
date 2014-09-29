@@ -10,6 +10,11 @@
 #include <list>
 #include "pre_parser.hpp"
 
+#define tipo_map_macro std::map<const std::basic_string<char>, std::vector<std::vector<std::basic_string<char> > > >::iterator
+#define tipo_end_macro std::map<const std::basic_string<char>, std::vector<std::vector<std::basic_string<char> > > >::end
+
+
+
 using namespace std;
 using namespace pre_parser;
 
@@ -26,6 +31,7 @@ vector< vector <string> > vetorTokensInput;
 vector< vector <string> > vetorTokensTratado;
 int totErros = 0;
 map<string,string> tabelaDefines;
+map<string,vector <vector <string> > > tabelaDeMacros;
 
 
 //Apagar dois pontos dos rotulos
@@ -199,12 +205,69 @@ void avaliarEqu(){
     }
 }
 
+int gerarTokens(char* input){
+    ifstream fpInput;
+    string buffer;
+    int endereco;
+    int linha;
+    vector<string> lineToTokens;
+    vector<string> line;
+    int indice;
+    int erro = 0;
+    vector<string> endline;
+    vector<string> linePassada;
+    int tamanhoVetor;
+
+
+    vetorTokensInput.clear();
+
+    endline.push_back("\n");
+
+
+
+    linha = 1;
+    endereco = 0;
+
+    fpInput.open(input);
+
+
+    if(!fpInput.is_open()){
+        cout << "Arquivo de input não existe" << endl;
+        exit(1);
+
+    }
+
+    while(!fpInput.eof()){
+        getline(fpInput, buffer);
+        if(!buffer.empty()) {
+            lineToTokens = tokens(buffer);
+            line = ignoraComentarios(lineToTokens);
+            vetorTokensInput.push_back(line);
+        }
+        else if(fpInput.eof()){
+            vetorTokensInput.push_back(endline);
+        }
+
+        linha++;
+    }
+
+    fpInput.close();
+    return erro;
+}
+
+
+
 int preprocessamento(char* input, char* output){
     ifstream fpInput;
     ofstream fpOutput;
     int erro=0;
 
     gerarTabelaDefines(input);
+    gerarTokens(input);
+    vetorTokensTratado = vetorTokensInput;
+    avaliarEqu();
+    avaliarIf();
+    pre_parser::gerarPreProcessado(vetorTokensTratado,output);
 
     return erro;
 }
@@ -213,6 +276,90 @@ int macro(char* input, char* output){
     ifstream fpInput;
     ofstream fpOutput;
     int erro = 0;
+    int i;
+    int j;
+    int isOnText;
+    string sec("section");
+    string tex("text");
+    string dat("data");
+    string strEnd("end");
+    string macroDef("macro");
+
+
+
+    vetorTokensTratado.clear();
+
+    string strDeDef;
+
+    vector<vector <string> > vetorNulo;
+    vetorNulo.clear();
+
+    gerarTokens(input);
+
+    isOnText = 0;
+
+    for(i=0;i<vetorTokensInput.size();i++){
+        if(stringCompareI(vetorTokensInput[i][0],sec) && stringCompareI(vetorTokensInput[i][1],tex)){
+            isOnText = 1;
+        }
+        if(stringCompareI(vetorTokensInput[i][0],sec) && stringCompareI(vetorTokensInput[i][1],dat)){
+            isOnText = 0;
+        }
+
+        if(isLabel(vetorTokensInput[i][0]) && stringCompareI(vetorTokensInput[i][1],macroDef)){
+            //inicio de definicao de macro
+            if(isOnText == 0){
+                //erro, def de macro fora do text
+                cout << "Erro semantico. Linha: " << i+1 << "Definicao de macro fora da secao texto." << endl;
+                erro++;
+            }
+            if(vetorTokensInput[i].size() != 2){
+                cout << "Erro sintatico. Linha: " << i+1 << "Erro na definicao de macro." << endl;
+                erro++;
+
+            }
+
+            strDeDef.clear();
+            strDeDef = apagaDoisPontos(vetorTokensInput[i][0]);
+            vetorNulo.clear();
+
+            i++;
+            while(!stringCompareI(vetorTokensInput[i][0],strEnd)){
+                vetorNulo.push_back(vetorTokensInput[i]);
+                i++;
+            }
+
+            tabelaDeMacros[strDeDef] = vetorNulo;
+
+
+        }else{
+            //caso nao seja definicao de macro
+            //se houver esta macro
+            //typename set< map<string,vector<vector <string> > > >::iterator iterador;
+            tipo_map_macro iterador;
+            if((iterador = tabelaDeMacros.find(vetorTokensInput[i][0])) != tabelaDeMacros.end()){
+                for(j = 0;j<(iterador->second).size();j++){
+                    vetorTokensTratado.push_back((iterador->second).at(j));
+
+                }
+
+            }else{
+                vetorTokensTratado.push_back(vetorTokensInput[i]);
+
+
+            }
+
+
+        }
+
+
+
+
+    }
+
+    pre_parser::gerarPreProcessado(vetorTokensTratado,output);
+
+
 
     return erro;
 }
@@ -372,109 +519,17 @@ int passagemUnica(char* input, char* output){
     return erro;
 }
 
-int primeiraPassagem(char* input){
-    ifstream fpInput;
-    string buffer;
-    int endereco;
-    int linha;
-    vector<string> lineToTokens;
-    vector<string> line;
-    int indice;
-    int erro = 0;
-    vector<string> endline;
-    vector<string> linePassada;
-    int tamanhoVetor;
-
-    endline.push_back("\n");
-
-
-
-    linha = 1;
-    endereco = 0;
-
-    fpInput.open(input);
-
-
-    if(!fpInput.is_open()){
-        cout << "Arquivo de input não existe" << endl;
-        exit(1);
-
-    }
-
-    while(!fpInput.eof()){
-        getline(fpInput, buffer);
-        if(!buffer.empty()) {
-            lineToTokens = tokens(buffer);
-            line = ignoraComentarios(lineToTokens);
-
-            if(isLabel(line[0]) && !stringCompareI(line[1],"EQU")) {
-                if(tabelaDeRotulos1.find(line[0]) != tabelaDeRotulos1.end()){
-                    //erro!
-                    cout << "Erro semantico! Dupla definicao de rotulos. Linha: " << linha << endl;
-                    totErros++;
-                    erro = 1;
-                }
-                else {
-                    tabelaDeRotulos1.insert(std::pair<string,int>(line[0],endereco));
-                }
-                indice = 1;
-            }
-            else{
-                indice = 0;
-            }
-
-
-            if(pre_parser::isInstruction(line[indice])){
-                if(!(stringCompareI(linePassada[0],"IF") && stringCompareI(linePassada[1],"0"))
-                   &&  !(stringCompareI(linePassada[0],"IF") && stringCompareI(tabelaDefines[linePassada[1]],"0"))  ){
-                    endereco = endereco + 1 + pre_parser::numOperandos(line[indice]);
-                }
-
-            }
-            else if(isDiretiva(line[indice])){
-                if(stringCompareI(line[indice],"CONST")){
-                    endereco = endereco + 1;
-
-                }
-                else if(stringCompareI(line[indice],"SPACE")){
-                    if(line.size() == 3){
-                        tamanhoVetor = atoi(line[indice+1].c_str());
-                        endereco = endereco + tamanhoVetor;
-                    }else{
-                        endereco = endereco + 1;
-                    }
-
-
-                }
-            }
-            else {
-                if(!isLabel(line[indice])){
-                    //erro
-                    cout << "Erro lexico! Operacao ou diretiva invalida. Linha: " << linha <<endl;
-                    totErros++;
-                    erro = 1;
-                }
-            }
-            vetorTokensInput.push_back(line);
-        }
-        else if(fpInput.eof()){
-            vetorTokensInput.push_back(endline);
-        }
-
-        linha++;
-        linePassada = line;
-    }
-
-    fpInput.close();
-    return erro;
-}
-
 
 int main(int argc, char* argv[]){
     char * outPre = new char[7];
     char * outMacro = new char[9];
     strcpy(outPre, "outPre\0");
     strcpy(outMacro, "outMacro\0");
+    string strIn(argv[2]);
+    string strOut(argv[3]);
+
+    strIn += ".asm";
+
 
     if(argc != 4){
         cout << "Erro! Numero de argumentos diferente do esperado." << endl;
@@ -485,15 +540,18 @@ int main(int argc, char* argv[]){
 
      if(!strcmp(argv[1], "-p")){
          preprocessamento(argv[2], argv[3]);
+         strOut += ".pre";
      }
      else if(!strcmp(argv[1], "-m")){
          preprocessamento(argv[2],outPre);
          macro(outPre, argv[3]);
+         strOut += ".mcr";
      }
      else if(!strcmp(argv[1], "-o")){
          preprocessamento(argv[2], outPre);
          macro(outPre, outMacro);
          passagemUnica(outMacro, argv[3]);
+         strOut += ".o";
      }
      else {
          // Usuario nao informou corretamente o tipo de operacao >> encerrar programa!
@@ -501,7 +559,15 @@ int main(int argc, char* argv[]){
          return 1;
      }
 
+    //*************************************************
+    //debug
+    //************************************************
+    //verificarVector(vetorTokensTratado);
+    //verificarVector(vetorTokensInput);
+    //getchar();
 
+    verificarMapStringToVector(tabelaDeMacros);
+    cout << "tabela macros vazia? "  <<tabelaDeMacros.empty() << endl;
 
 
 

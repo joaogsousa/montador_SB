@@ -29,6 +29,8 @@ namespace pre_parser{
     void verificarMapString(map<string,string> mapa);
     void verificarVector(vector<vector<string> > vetorStrings);
     void gerarPreProcessado(vector<vector<string> > vetorStrings,char* arquivoPre);
+    void verificarMapStringToVector(map<string, vector< vector< string> > > mymap);
+
 };
 
 
