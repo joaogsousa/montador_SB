@@ -16,7 +16,7 @@ if 1
 add n3
 minha_macro
 copy n2 n3
-mul n2
+mult aff
 macro2
 load n3
 output n3
@@ -30,3 +30,4 @@ n3: space
 lol: space
 label1: equ 1
 label2: equ 0
+aff: const 446

@@ -9,6 +9,8 @@
 #include <map>
 #include <list>
 #include "pre_parser.hpp"
+#include <cassert>
+
 
 #define tipo_map_macro std::map<const std::basic_string<char>, std::vector<std::vector<std::basic_string<char> > > >::iterator
 #define tipo_end_macro std::map<const std::basic_string<char>, std::vector<std::vector<std::basic_string<char> > > >::end
@@ -388,6 +390,7 @@ int passagemUnica(char* input, char* output){
     endline.push_back("\n");
     string strParaArquivo;
     string strParaArquivoTotal;
+    int endMod;
 
     linha = 1;
     endereco = 0;
@@ -508,16 +511,86 @@ int passagemUnica(char* input, char* output){
                 endereco = endereco + 1 + numOp;
             }
             else{
-                cout << "Erro lexico! Linha: " << linha << endl;
+                // caso nao seja instrucao, ainda pode ser const e space
+                string strSpace("space");
+                string strConst("const");
+                string strTxt("text");
+                string strDat("data");
+                string strSec("section");
+
+                if(stringCompareI(line[indice],strSpace)){
+                    if(line.size() == 2){
+                        strParaArquivo += to_string(0);
+                        strParaArquivo += " ";
+                        endereco++;
+
+                    }else{
+                        int k;
+                        for(k=0;k<stoi(line[indice+1]);k++){
+                            strParaArquivo += to_string(0);
+                            strParaArquivo += " ";
+                            endereco++;
+
+                        }
+
+                    }
+
+                }else if(stringCompareI(line[indice],strConst)){
+                    strParaArquivo += line[indice+1];
+                    strParaArquivo += " ";
+                    endereco++;
+
+
+                }else if(stringCompareI(line[indice],strSec) && stringCompareI(line[indice + 1],strTxt)){
+                    //esta na secao texto
+
+                }else if(stringCompareI(line[indice],strSec) && stringCompareI(line[indice + 1],strDat)){
+                    //esta na secao data
+
+
+                }
+                else{
+                    cout << "Erro lexico! Linha: " << linha << endl;
+                }
             }
         }
         linha++;
-        fpOutput << strParaArquivo;
+        //fpOutput << strParaArquivo;
         strParaArquivoTotal += strParaArquivo;
     }
 
-    cout << "string do arquivo total: " << endl;
-    cout << strParaArquivoTotal << endl;
+    //varredura das listas para atualizar enderecos
+    for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
+        if(it->second.defined == 0){
+            cout << "Erro semantico. Simbolo nao definido." << endl;
+            erro++;
+
+        }else{
+            while(!it->second.use.empty()){
+                //caution!!! código denso!
+                endMod = it->second.use.front();
+                endMod = indiceComEndereco(endMod,strParaArquivoTotal);
+                strParaArquivoTotal.erase(endMod,1);
+                string insercao("");
+                insercao = to_string(it->second.value);
+                strParaArquivoTotal.insert(endMod,insercao);
+                cout << "valor inserido: " << insercao << endl;
+                it->second.use.pop_front();
+
+            }
+
+
+
+        }
+
+
+
+    }
+
+    fpOutput << strParaArquivoTotal;
+
+    //cout << "string do arquivo total: " << endl;
+    //cout << strParaArquivoTotal << endl;
 
     fpInput.close();
     fpOutput.close();
@@ -575,7 +648,11 @@ int main(int argc, char* argv[]){
     //cout << "tabela macros vazia? "  <<tabelaDeMacros.empty() << endl;
 
 
+    string strTeste("88 99 9 9 1 4 333 4 5 234 434234 8");
 
+    cout << "indices" << endl;
+    assert(indiceComEndereco(4,strTeste) == 10);
+    cout << indiceComEndereco(4,strTeste) << endl;
 
 
     return 0;

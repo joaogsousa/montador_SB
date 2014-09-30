@@ -296,4 +296,21 @@ namespace pre_parser{
     }
 
 
+    int indiceComEndereco(int end,string str){
+        int i;
+        int numEspacos;
+        numEspacos = 0;
+        i = 0;
+        while(numEspacos < end){
+            if(str[i] == ' '){
+                numEspacos ++;
+            }
+
+            i++;
+        }
+
+        return i;
+    }
+
+
 };
