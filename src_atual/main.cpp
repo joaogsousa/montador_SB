@@ -25,7 +25,6 @@ typedef struct rotulo
     list<int> use;
 }rotulo;
 
-map<string, int> tabelaDeRotulos1;
 map<string, rotulo> tabelaDeRotulos;
 vector< vector <string> > vetorTokensInput;
 vector< vector <string> > vetorTokensTratado;
@@ -344,8 +343,9 @@ int macro(char* input, char* output){
                 }
 
             }else{
-                vetorTokensTratado.push_back(vetorTokensInput[i]);
-
+                if(vetorTokensInput[i].size()>=1){
+                    vetorTokensTratado.push_back(vetorTokensInput[i]);
+                }
 
             }
 
@@ -387,6 +387,7 @@ int passagemUnica(char* input, char* output){
     list<int> listaux;
     endline.push_back("\n");
     string strParaArquivo;
+    string strParaArquivoTotal;
 
     linha = 1;
     endereco = 0;
@@ -454,6 +455,7 @@ int passagemUnica(char* input, char* output){
             if(opCode != 0){
                 numOp = pre_parser::numOperandosByOpCode(opCode);
                 strParaArquivo += to_string(opCode);
+                strParaArquivo += " ";
 
                 if(line.size() != numOp + indice + 1){
                     // Erro! Numero de operandos invalido!
@@ -470,22 +472,22 @@ int passagemUnica(char* input, char* output){
                             symbol.use = listaux;
                             symbol.use.push_back(endereco+i+1);
                             tabelaDeRotulos.insert(pair<string,rotulo>(operando,symbol));
-                            strParaArquivo += " ";
                             strParaArquivo += to_string(0);
+                            strParaArquivo += " ";
                         }
                         else{
                             for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
                                 if(it->first == operando){
                                     if(it->second.defined){
                                         //mete no codigo
-                                        strParaArquivo += " ";
                                         strParaArquivo += to_string(it->second.value);
+                                        strParaArquivo += " ";
 
                                     }
                                     else{
                                         it->second.use.push_back(endereco+i+1);
-                                        strParaArquivo += " ";
                                         strParaArquivo += to_string(0);
+                                        strParaArquivo += " ";
                                     }
                                     find = 1;
                                     break;
@@ -497,8 +499,8 @@ int passagemUnica(char* input, char* output){
                                 symbol.use = listaux;
                                 symbol.use.push_back(endereco+i+1);
                                 tabelaDeRotulos.insert(pair<string,rotulo>(operando,symbol));
-                                strParaArquivo += " ";
                                 strParaArquivo += to_string(0);
+                                strParaArquivo += " ";
                             }
                         }
                     }
@@ -510,9 +512,12 @@ int passagemUnica(char* input, char* output){
             }
         }
         linha++;
-        strParaArquivo += " ";
         fpOutput << strParaArquivo;
+        strParaArquivoTotal += strParaArquivo;
     }
+
+    cout << "string do arquivo total: " << endl;
+    cout << strParaArquivoTotal << endl;
 
     fpInput.close();
     fpOutput.close();
@@ -566,8 +571,8 @@ int main(int argc, char* argv[]){
     //verificarVector(vetorTokensInput);
     //getchar();
 
-    verificarMapStringToVector(tabelaDeMacros);
-    cout << "tabela macros vazia? "  <<tabelaDeMacros.empty() << endl;
+    //verificarMapStringToVector(tabelaDeMacros);
+    //cout << "tabela macros vazia? "  <<tabelaDeMacros.empty() << endl;
 
 
 

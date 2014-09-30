@@ -15,10 +15,10 @@ pre:
 	./montador -p inputs/input.asm outputs/output.pre
 
 macro:
-	./montador -m inputs/input.asm outputs/output.macro
+	./montador -m inputs/input.asm outputs/output.mcr
 
 obj:
-	./montador -o inputs/input.asm outputs/output.obj
+	./montador -o inputs/input.asm outputs/output.o
 
 clear:
 	rm *.o

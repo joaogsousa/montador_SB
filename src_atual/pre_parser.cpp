@@ -265,16 +265,27 @@ namespace pre_parser{
         int i;
         int j;
         ofstream arquivoSaida(arquivoPre);
+        string vazia("");
+        string espaco(" ");
+        string newLine;
+        newLine += '\n';
 
+        //debug
+        //cout << "debug do gerar" << endl;
+        //cout << vetorStrings[vetorStrings.size()-1][0] << endl << endl;
 
-        for(i=0;i<vetorStrings.size();i++){
+        for(i=0;i<vetorStrings.size() - 1;i++){
             for(j=0;j<vetorStrings[i].size();j++){
-                arquivoSaida << vetorStrings[i][j];
+                if(!stringCompareI(vetorStrings[i][j],vazia) && !stringCompareI(vetorStrings[i][j],espaco) && !stringCompareI(vetorStrings[i][j],newLine)){
+                    arquivoSaida << vetorStrings[i][j];
+                }
                 if(j+1<vetorStrings[i].size()){
                     arquivoSaida << " ";
                 }
             }
-            arquivoSaida << endl;
+            if(vetorStrings[i].size() >= 1){
+                arquivoSaida << endl;
+            }
         }
 
         arquivoSaida.close();

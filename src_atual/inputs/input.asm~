@@ -22,6 +22,7 @@ load n3
 output n3
 jmp rot2
 rot2: stop
+stop
 section data
 n1: space
 n2: space 4
