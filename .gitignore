@@ -1,6 +1,7 @@
 # Compiled source #
 ##################
 *.o
-*.swp
+.*.swp
+*.*~
 montador
 
