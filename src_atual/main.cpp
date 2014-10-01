@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <vector>
 #include <string>
+#include <string.h>
 #include <cstring>
 #include <map>
 #include <list>
@@ -262,13 +263,20 @@ int preprocessamento(char* input, char* output){
     ifstream fpInput;
     ofstream fpOutput;
     int erro=0;
+    const char * pontoASM = ".asm";
+    const char * pontoPre = ".pre";
+    char * inExtension;
+    char * outExtension;
 
-    gerarTabelaDefines(input);
-    gerarTokens(input);
+    inExtension = addFormato(input, pontoASM);
+    outExtension = addFormato(output,pontoPre);
+
+    gerarTabelaDefines(inExtension);
+    gerarTokens(inExtension);
     vetorTokensTratado = vetorTokensInput;
     avaliarEqu();
     avaliarIf();
-    pre_parser::gerarPreProcessado(vetorTokensTratado,output);
+    pre_parser::gerarPreProcessado(vetorTokensTratado,outExtension);
 
     return erro;
 }
@@ -280,6 +288,14 @@ int macro(char* input, char* output){
     int i;
     int j;
     int isOnText;
+    const char * pontoPre = ".pre";
+    const char * pontoM = ".mcr";
+    char * inExtension;
+    char * outExtension;
+
+    inExtension = addFormato(input,pontoPre);
+    outExtension = addFormato(output,pontoM);
+
     string sec("section");
     string tex("text");
     string dat("data");
@@ -295,7 +311,7 @@ int macro(char* input, char* output){
     vector<vector <string> > vetorNulo;
     vetorNulo.clear();
 
-    gerarTokens(input);
+    gerarTokens(inExtension);
 
     isOnText = 0;
 
@@ -350,16 +366,12 @@ int macro(char* input, char* output){
                 }
 
             }
-
-
         }
-
-
-
-
     }
 
-    pre_parser::gerarPreProcessado(vetorTokensTratado,output);
+    pre_parser::gerarPreProcessado(vetorTokensTratado, outExtension);
+    output = (char *) malloc(strlen(outExtension) + 1);
+    strcpy(output,outExtension);
 
 
 
@@ -391,12 +403,19 @@ int passagemUnica(char* input, char* output){
     string strParaArquivo;
     string strParaArquivoTotal;
     int endMod;
+    const char * pontoM = ".mcr";
+    const char * pontoO = ".o";
+    char * inExtension;
+    char * outExtension;
 
     linha = 1;
     endereco = 0;
+    
+    inExtension = addFormato(input, pontoM);
+    outExtension = addFormato(output, pontoO);
 
-    fpInput.open(input);
-    fpOutput.open(output);
+    fpInput.open(inExtension);
+    fpOutput.open(outExtension);
 
 
     if(!fpInput.is_open()){
@@ -599,10 +618,12 @@ int passagemUnica(char* input, char* output){
 
 
 int main(int argc, char* argv[]){
-    char * outPre = new char[7];
-    char * outMacro = new char[9];
-    strcpy(outPre, "outPre\0");
-    strcpy(outMacro, "outMacro\0");
+    char * outPre = new char[14];
+    char * outMacro = new char[16];
+    char * input;
+    char * output;
+    strcpy(outPre, "outputs/outPre\0");
+    strcpy(outMacro, "outputs/outMacro\0");
     string strIn(argv[2]);
     string strOut(argv[3]);
 
@@ -616,19 +637,22 @@ int main(int argc, char* argv[]){
 
     //passagemUnica(argv[2], argv[3]);
 
+    input = argv[2];
+    output = argv[3];
+    
      if(!strcmp(argv[1], "-p")){
-         preprocessamento(argv[2], argv[3]);
+         preprocessamento(input,output);
          strOut += ".pre";
      }
      else if(!strcmp(argv[1], "-m")){
-         preprocessamento(argv[2],outPre);
-         macro(outPre, argv[3]);
+         preprocessamento(input,outPre);
+         macro(outPre,output); 
          strOut += ".mcr";
      }
      else if(!strcmp(argv[1], "-o")){
-         preprocessamento(argv[2], outPre);
+         preprocessamento(input, outPre);
          macro(outPre, outMacro);
-         passagemUnica(outMacro, argv[3]);
+         passagemUnica(outMacro, output);
          strOut += ".o";
      }
      else {

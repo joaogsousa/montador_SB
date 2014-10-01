@@ -6,6 +6,16 @@ namespace pre_parser{
         return 0;
     }
 
+    char * addFormato(char * input, const char * formato){
+	    char * extension;
+
+	    extension = (char *) malloc(strlen(input) + strlen(formato) + 1);
+	    strcpy(extension,input);
+	    strcat(extension,formato);
+
+	    return extension;
+    }
+
     int isLabel(string string1){
         int i;
         i = 0;
