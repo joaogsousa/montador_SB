@@ -12,14 +12,13 @@ pre_parser.o: pre_parser.cpp pre_parser.hpp
 
 
 pre:
-	./montador -p inputs/input.asm outputs/output.pre
+	./montador -p inputs/input outputs/output
 
 macro:
-	./montador -m inputs/input.asm outputs/output.mcr
+	./montador -m inputs/input outputs/output
 
 obj:
-	./montador -o inputs/input.asm outputs/output.o
+	./montador -o inputs/input outputs/output
 
 clear:
 	rm *.o
-	rm montador

@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <string.h>
 #include <cstdlib>
 #include <map>
 
@@ -14,6 +15,7 @@ using namespace std;
 
 namespace pre_parser{
     int isInstruction(string string1);
+    char * addFormato(char * input, const char * formato);
     int isPseudo(string string1);
     int isDiretiva(string string1);
     int isLabel(string string1);
