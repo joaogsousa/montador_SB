@@ -9,7 +9,7 @@
 #include <cstring>
 #include <map>
 #include <list>
-#include "pre_parser.hpp"
+#include "../header/pre_parser.hpp"
 #include <cassert>
 
 
@@ -581,7 +581,7 @@ int passagemUnica(char* input, char* output){
     //varredura das listas para atualizar enderecos
     for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
         if(it->second.defined == 0){
-            cout << "Erro semantico. Simbolo nao definido." << endl;
+            cout << "Erro semantico. Linha: " << linha << endl;
             erro++;
 
         }else{
@@ -593,7 +593,6 @@ int passagemUnica(char* input, char* output){
                 string insercao("");
                 insercao = to_string(it->second.value);
                 strParaArquivoTotal.insert(endMod,insercao);
-                cout << "valor inserido: " << insercao << endl;
                 it->second.use.pop_front();
 
             }
@@ -672,12 +671,12 @@ int main(int argc, char* argv[]){
     //cout << "tabela macros vazia? "  <<tabelaDeMacros.empty() << endl;
 
 
-    string strTeste("88 99 9 9 1 4 333 4 5 234 434234 8");
+/*    string strTeste("88 99 9 9 1 4 333 4 5 234 434234 8");
 
     cout << "indices" << endl;
     assert(indiceComEndereco(4,strTeste) == 10);
     cout << indiceComEndereco(4,strTeste) << endl;
-
+*/
 
     return 0;
 }
