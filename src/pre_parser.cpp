@@ -1,4 +1,5 @@
 #include "../header/pre_parser.hpp"
+#define LABELMAX 100
 
 namespace pre_parser{
     int isPseudo(string string1){
@@ -320,6 +321,64 @@ namespace pre_parser{
         }
 
         return i;
+    }
+
+    int retornaIndiceDoLabel(string str){
+        int i;
+        string aux;
+
+        for(i=0;i<str.size();i++){
+            if(str[i] == '['){
+                while(str[i] != ']'){
+                    i++;
+                    if(str[i] != ']'){
+                        aux += str[i];
+                    }
+                    else{
+                        return stoi(aux);
+                    }
+                }
+            }
+
+        }
+
+        return 0;
+
+
+    }
+
+    int charValido(char c){
+        if(isNum(c) || isChar(c) || c == '_'){
+            return 1;
+        }else{
+            return 0;
+
+        }
+
+    }
+
+
+    int verificaValidadeDeToken(string str){
+        int i;
+
+        if(str.size() > LABELMAX){
+            return 0;
+        }
+
+        if(pre_parser::isNum(str[0])){
+            return 0;
+        }
+
+        for(i=0;i<str.size();i++){
+            if(!charValido(str[i])){
+                return 0;
+            }
+
+        }
+
+        return 1;
+
+
     }
 
 

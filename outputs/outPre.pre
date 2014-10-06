@@ -1,27 +1,9 @@
 section text
-minha_macro: macro
-add lol
-sub lol
-output lol
-end
-macro2: macro
-add n2
-sub n2
-end
-copy n1 n2
-add n3
-minha_macro
-copy n2 n3
-mult aff
-macro2
-load n3
-output n3
-jmp rot2
-rot2: stop
+rot1: copy n1 rot2: n2
+store n1
+load n2
+mult n1
 stop
 section data
-n1: space
-n2: space 4
-n3: space
-lol: space
-aff: const 446
+N1: space
+N2: SPACE

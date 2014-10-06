@@ -31,7 +31,7 @@ typedef struct rotulo
 map<string, rotulo> tabelaDeRotulos;
 vector< vector <string> > vetorTokensInput;
 vector< vector <string> > vetorTokensTratado;
-int totErros = 0;
+int erro = 0;
 map<string,string> tabelaDefines;
 map<string,vector <vector <string> > > tabelaDeMacros;
 
@@ -215,7 +215,6 @@ int gerarTokens(char* input){
     vector<string> lineToTokens;
     vector<string> line;
     int indice;
-    int erro = 0;
     vector<string> endline;
     vector<string> linePassada;
     int tamanhoVetor;
@@ -262,7 +261,6 @@ int gerarTokens(char* input){
 int preprocessamento(char* input, char* output){
     ifstream fpInput;
     ofstream fpOutput;
-    int erro=0;
     const char * pontoASM = ".asm";
     const char * pontoPre = ".pre";
     char * inExtension;
@@ -284,7 +282,6 @@ int preprocessamento(char* input, char* output){
 int macro(char* input, char* output){
     ifstream fpInput;
     ofstream fpOutput;
-    int erro = 0;
     int i;
     int j;
     int isOnText;
@@ -390,7 +387,6 @@ int passagemUnica(char* input, char* output){
     vector<string> lineToTokens;
     vector<string> line;
     int indice;
-    int erro = 0;
     int find;
     vector<string> endline;
     vector<string> linePassada;
@@ -407,15 +403,18 @@ int passagemUnica(char* input, char* output){
     const char * pontoO = ".o";
     char * inExtension;
     char * outExtension;
+    int numText = 0;
+    int numData = 0;
+    int isOnText = 0;
+    int isOnData = 0;
 
     linha = 1;
     endereco = 0;
-    
+
     inExtension = addFormato(input, pontoM);
     outExtension = addFormato(output, pontoO);
 
     fpInput.open(inExtension);
-    fpOutput.open(outExtension);
 
 
     if(!fpInput.is_open()){
@@ -432,6 +431,22 @@ int passagemUnica(char* input, char* output){
             lineToTokens = tokens(buffer);
             line = ignoraComentarios(lineToTokens);
 
+            int indiceAux;
+            int numLabels = 0;
+            for(indiceAux = 0;indiceAux < line.size();indiceAux++){
+                if(pre_parser::isLabel(line[indiceAux])){
+                    numLabels++;
+                }
+
+            }
+            // ver se tem mais que um e dar erro
+            if(numLabels > 1){
+                erro++;
+                cout << "Erro semantico! Mais de um rótulo em uma linha." << endl;
+
+            }
+
+
             // Verifica se eh definicao de rotulo
             if(isLabel(line[0])){
                 labelTratado = apagaDoisPontos(line[0]);
@@ -446,9 +461,8 @@ int passagemUnica(char* input, char* output){
                             symbol = it->second;
                             if(symbol.defined == 1) {
                                 //erro, rotulo redefinido
-                                cout << "Erro semantico! Linha: " << linha << endl;
-                                totErros++;
-                                erro = 1;
+                                cout << "Erro semantico! Linha: " << linha << ". Declaração de rótulo repitida." << endl;
+                                erro++;
                             }
                             else{
                                 it->second.defined = 1;
@@ -475,13 +489,22 @@ int passagemUnica(char* input, char* output){
             // Verifica se eh uma operacao
             opCode = pre_parser::isInstruction(line[indice]); //Verifica se eh instrucao e qual
             if(opCode != 0){
+                //significa que é instruçao
+                //verificar se esta na secao correta
+                if(!isOnText){
+                    erro++;
+                    cout << "Erro semantico! Instruçao fora da seçao TEXT." << endl;
+
+                }
+
                 numOp = pre_parser::numOperandosByOpCode(opCode);
                 strParaArquivo += to_string(opCode);
                 strParaArquivo += " ";
 
                 if(line.size() != numOp + indice + 1){
                     // Erro! Numero de operandos invalido!
-                    cout << "Erro sintatico! Linha: " << linha << endl;
+                    erro++;
+                    cout << "Erro sintatico! Linha: " << linha << ". Número de operandos invalido." << endl;
                 }
                 else if(numOp > 0){
                     //TODO: tratar os simbolos nao definidos
@@ -554,43 +577,76 @@ int passagemUnica(char* input, char* output){
 
                     }
 
+                    //incrementar erros caso estiver na secao texto
+                    if(!isOnData){
+                        erro++;
+                        cout << "Erro semantico! Declaraçao de variavel fora da secao DATA." << endl;
+                    }
+
+
                 }else if(stringCompareI(line[indice],strConst)){
                     strParaArquivo += line[indice+1];
                     strParaArquivo += " ";
                     endereco++;
 
 
+                    //incrementar erros caso estiver na secao texto
+                    if(!isOnData){
+                        erro++;
+                        cout << "Erro semantico! Declaraçao de variavel fora da secao DATA." << endl;
+                    }
+
+
                 }else if(stringCompareI(line[indice],strSec) && stringCompareI(line[indice + 1],strTxt)){
                     //esta na secao texto
+                    isOnText = 1;
+                    isOnData = 0;
+                    numText++;
+
 
                 }else if(stringCompareI(line[indice],strSec) && stringCompareI(line[indice + 1],strDat)){
                     //esta na secao data
+                    isOnText = 0;
+                    isOnData = 1;
+                    numData++;
 
+                }else if(stringCompareI(line[indice],strSec) && !stringCompareI(line[indice + 1],strDat) && !stringCompareI(line[indice + 1],strTxt)){
+                    //secao nao identificada
+                    erro++;
+                    cout << "Erro semantico! Secao não identificada." << endl;
 
                 }
                 else{
-                    cout << "Erro lexico! Linha: " << linha << endl;
+                    cout << "Erro lexico! Linha: " << linha << ". Token não identificado." << endl;
+                    erro++;
                 }
             }
         }
         linha++;
-        //fpOutput << strParaArquivo;
         strParaArquivoTotal += strParaArquivo;
     }
 
     //varredura das listas para atualizar enderecos
     for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
+        if(!pre_parser::verificaValidadeDeToken(it->first)){
+            erro++;
+            cout << "Erro lexico! Identificador de rótulo inválido." << endl;
+
+        }
+
         if(it->second.defined == 0){
-            cout << "Erro semantico. Linha: " << linha << endl;
+            cout << "Erro semantico. Linha: " << linha << ". Variavel não declarada." << endl;
             erro++;
 
         }else{
             while(!it->second.use.empty()){
                 //caution!!! código denso!
+                int auxValue;       // para pegar o valor qnd for um array tbm
                 endMod = it->second.use.front();
                 endMod = indiceComEndereco(endMod,strParaArquivoTotal);
                 strParaArquivoTotal.erase(endMod,1);
                 string insercao("");
+                //auxValue = it->second.value + pre_parser::retornaIndiceDoLabel()
                 insercao = to_string(it->second.value);
                 strParaArquivoTotal.insert(endMod,insercao);
                 it->second.use.pop_front();
@@ -605,10 +661,32 @@ int passagemUnica(char* input, char* output){
 
     }
 
-    fpOutput << strParaArquivoTotal;
+    //verificar erros finais
+    if(numText == 0){
+        erro++;
+        cout << "Erro semantico! Seçao TEXT não declarada." << endl;
+    }
 
-    //cout << "string do arquivo total: " << endl;
-    //cout << strParaArquivoTotal << endl;
+    if(numData == 0){
+        erro++;
+        cout << "Erro semantico! Seçao DATA não declarada." << endl;
+    }
+    if(numData > 1){
+        erro++;
+        cout << "Erro semantico! Secao DATA declarada mais de uma vez." << endl;
+    }
+    if(numText > 1){
+        erro++;
+        cout << "Erro semantico! Secao TEXT declarada mais de uma vez." << endl;
+    }
+
+    //somente escrever se tiver tudo nos conformes
+    if(!erro){
+        fpOutput.open(outExtension);
+        fpOutput << strParaArquivoTotal;
+    }else{
+        cout << "Arquivo obj não gerado, há erros no source." << endl;
+    }
 
     fpInput.close();
     fpOutput.close();
@@ -638,14 +716,14 @@ int main(int argc, char* argv[]){
 
     input = argv[2];
     output = argv[3];
-    
+
      if(!strcmp(argv[1], "-p")){
          preprocessamento(input,output);
          strOut += ".pre";
      }
      else if(!strcmp(argv[1], "-m")){
          preprocessamento(input,outPre);
-         macro(outPre,output); 
+         macro(outPre,output);
          strOut += ".mcr";
      }
      else if(!strcmp(argv[1], "-o")){
@@ -663,20 +741,8 @@ int main(int argc, char* argv[]){
     //*************************************************
     //debug
     //************************************************
-    //verificarVector(vetorTokensTratado);
-    //verificarVector(vetorTokensInput);
-    //getchar();
-
-    //verificarMapStringToVector(tabelaDeMacros);
-    //cout << "tabela macros vazia? "  <<tabelaDeMacros.empty() << endl;
 
 
-/*    string strTeste("88 99 9 9 1 4 333 4 5 234 434234 8");
-
-    cout << "indices" << endl;
-    assert(indiceComEndereco(4,strTeste) == 10);
-    cout << indiceComEndereco(4,strTeste) << endl;
-*/
 
     return 0;
 }

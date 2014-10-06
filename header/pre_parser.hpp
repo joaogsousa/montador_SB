@@ -33,6 +33,9 @@ namespace pre_parser{
     void gerarPreProcessado(vector<vector<string> > vetorStrings,char* arquivoPre);
     void verificarMapStringToVector(map<string, vector< vector< string> > > mymap);
     int indiceComEndereco(int end,string str);
+    int retornaIndiceDoLabel(string str);
+    int verificaValidadeDeToken(string str);
+    int charValido(char c);
 
 };
 
