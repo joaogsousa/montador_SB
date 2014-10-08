@@ -26,7 +26,16 @@ typedef struct rotulo
     int defined;
     int value;
     list<int> use;
+    bool isLabel;
+    bool isVar;
+    bool isConst;
 }rotulo;
+
+typedef struct argumento
+{
+    string arg;
+    int linha;
+}argumento;
 
 map<string, rotulo> tabelaDeRotulos;
 vector< vector <string> > vetorTokensInput;
@@ -407,6 +416,16 @@ int passagemUnica(char* input, char* output){
     int numData = 0;
     int isOnText = 0;
     int isOnData = 0;
+    list<argumento> argDiv;
+    list<argumento> argJmp;
+    list<argumento> argMod;
+    map<string,int> constParaValor;
+
+    //pendencias: div por zero, modificar constante, pulo para secao data
+    //instrucoes que modificam: copy:9  ;   store:11    ;   input:12
+    //div: 4
+    //instrucoes de pulo:   jmp:5         jmpn:6    jmpp:7    jmpz:8
+
 
     linha = 1;
     endereco = 0;
@@ -442,7 +461,7 @@ int passagemUnica(char* input, char* output){
             // ver se tem mais que um e dar erro
             if(numLabels > 1){
                 erro++;
-                cout << "Erro semantico! Mais de um rótulo em uma linha." << endl;
+                cout << "Erro semantico! Linha: " << linha << ". Mais de um rótulo em uma linha." << endl;
 
             }
 
@@ -453,6 +472,19 @@ int passagemUnica(char* input, char* output){
                 if(tabelaDeRotulos.empty()){
                     symbol.value = endereco;
                     symbol.defined = 1;
+                    //setar as variaveis de verificaçao de onde esta o label
+                    if(isOnText){
+                        symbol.isLabel = 1;
+                        symbol.isVar = 0;
+                    }else{
+                        symbol.isLabel = 0;
+                        symbol.isVar = 1;
+                    }
+                    if(stringCompareI(line[1],"const")){
+                        symbol.isConst = 1;
+                    }else{
+                        symbol.isConst = 0;
+                    }
                     tabelaDeRotulos.insert(pair<string,rotulo>(labelTratado,symbol));
                 }
                 else{
@@ -467,6 +499,21 @@ int passagemUnica(char* input, char* output){
                             else{
                                 it->second.defined = 1;
                                 it->second.value = endereco;
+                                //setar as variaveis de verificaçao de onde esta o label
+                                if(isOnText){
+                                    it->second.isLabel = 1;
+                                    it->second.isVar = 0;
+                                }else{
+                                    it->second.isLabel = 0;
+                                    it->second.isVar = 1;
+                                }
+                                if(stringCompareI(line[1],"const")){
+                                    it->second.isConst = 1;
+                                }else{
+                                    it->second.isConst = 0;
+                                }
+
+
                             }
                             find = 1;
                             break;
@@ -477,6 +524,21 @@ int passagemUnica(char* input, char* output){
                         symbol.value = endereco;
                         symbol.defined = 1;
                         symbol.use = listaux;
+
+                        //setar as variaveis de verificaçao de onde esta o label
+                        if(isOnText){
+                            symbol.isLabel = 1;
+                            symbol.isVar = 0;
+                        }else{
+                            symbol.isLabel = 0;
+                            symbol.isVar = 1;
+                        }
+                        if(stringCompareI(line[1],"const")){
+                            symbol.isConst = 1;
+                        }else{
+                            symbol.isConst = 0;
+                        }
+
                         tabelaDeRotulos.insert(pair<string,rotulo>(labelTratado,symbol));
                     }
                 }
@@ -486,14 +548,48 @@ int passagemUnica(char* input, char* output){
                 indice = 0;
             }
 
+
+
+            //pendencias: div por zero, modificar constante, pulo para secao data
+            //instrucoes que modificam: copy:9  ;   store:11    ;   input:12
+            //div: 4
+            //instrucoes de pulo:   jmp:5         jmpn:6    jmpp:7    jmpz:8
+
             // Verifica se eh uma operacao
             opCode = pre_parser::isInstruction(line[indice]); //Verifica se eh instrucao e qual
             if(opCode != 0){
+                //colocar os argumentos criticos nas listas
+                argumento aux;
+                if(opCode == 4){
+                    //div
+                    aux.arg = line[indice+1];
+                    aux.linha = linha;
+                    argDiv.push_back(aux);
+
+                }
+                if(opCode == 9 || opCode == 11 || opCode == 12){
+                    //modificadores
+                    aux.arg = line[indice+1];
+                    aux.linha = linha;
+                    argMod.push_back(aux);
+
+                }
+                if(opCode > 4 && opCode < 9){
+                    //instrucoes de jump
+                    aux.arg = line[indice+1];
+                    aux.linha = linha;
+                    argJmp.push_back(aux);
+
+
+                }
+
+
+
                 //significa que é instruçao
                 //verificar se esta na secao correta
                 if(!isOnText){
                     erro++;
-                    cout << "Erro semantico! Instruçao fora da seçao TEXT." << endl;
+                    cout << "Erro semantico! Linha: " << linha << ". Instruçao fora da seçao TEXT." << endl;
 
                 }
 
@@ -580,7 +676,7 @@ int passagemUnica(char* input, char* output){
                     //incrementar erros caso estiver na secao texto
                     if(!isOnData){
                         erro++;
-                        cout << "Erro semantico! Declaraçao de variavel fora da secao DATA." << endl;
+                        cout << "Erro semantico! Linha: " << linha << ". Declaraçao de variavel fora da secao DATA." << endl;
                     }
 
 
@@ -589,11 +685,14 @@ int passagemUnica(char* input, char* output){
                     strParaArquivo += " ";
                     endereco++;
 
+                    //botar o valor de const em algum lugar para ver se é zero
+                    constParaValor[apagaDoisPontos(line[indice - 1])] = stoi(line[indice + 1]);
+
 
                     //incrementar erros caso estiver na secao texto
                     if(!isOnData){
                         erro++;
-                        cout << "Erro semantico! Declaraçao de variavel fora da secao DATA." << endl;
+                        cout << "Erro semantico! Linha: " << linha <<  ". Declaraçao de variavel fora da secao DATA." << endl;
                     }
 
 
@@ -613,7 +712,7 @@ int passagemUnica(char* input, char* output){
                 }else if(stringCompareI(line[indice],strSec) && !stringCompareI(line[indice + 1],strDat) && !stringCompareI(line[indice + 1],strTxt)){
                     //secao nao identificada
                     erro++;
-                    cout << "Erro semantico! Secao não identificada." << endl;
+                    cout << "Erro semantico! Linha: " << linha << ". Secao não identificada." << endl;
 
                 }
                 else{
@@ -630,7 +729,7 @@ int passagemUnica(char* input, char* output){
     for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
         if(!pre_parser::verificaValidadeDeToken(it->first)){
             erro++;
-            cout << "Erro lexico! Identificador de rótulo inválido." << endl;
+            cout << "Erro lexico! Linha: " << linha <<  ". Identificador de rótulo inválido." << endl;
 
         }
 
@@ -664,28 +763,76 @@ int passagemUnica(char* input, char* output){
     //verificar erros finais
     if(numText == 0){
         erro++;
-        cout << "Erro semantico! Seçao TEXT não declarada." << endl;
+        cout << "Erro semantico! Linha: " << linha << ". Seçao TEXT não declarada." << endl;
     }
 
     if(numData == 0){
         erro++;
-        cout << "Erro semantico! Seçao DATA não declarada." << endl;
+        cout << "Erro semantico! Linha: " << linha <<  ". Seçao DATA não declarada." << endl;
     }
     if(numData > 1){
         erro++;
-        cout << "Erro semantico! Secao DATA declarada mais de uma vez." << endl;
+        cout << "Erro semantico! Linha: " << linha <<  ". Secao DATA declarada mais de uma vez." << endl;
     }
     if(numText > 1){
         erro++;
-        cout << "Erro semantico! Secao TEXT declarada mais de uma vez." << endl;
+        cout << "Erro semantico! Linha: " << linha <<  ". Secao TEXT declarada mais de uma vez." << endl;
     }
+
+
+    //Verificar se não houve erro nos argumentos
+    //modificadores:
+    argumento elemento;
+    while(!argMod.empty()){
+        elemento = argMod.front();
+        map<string,rotulo>::iterator it2 = tabelaDeRotulos.find(elemento.arg);
+        if(it2 != tabelaDeRotulos.end()){
+            if(it2->second.isConst == 1){
+                erro++;
+                cout << "Erro semantico! Linha: " << elemento.linha <<  ". Modificaçao de constante." << endl;
+            }
+        }
+
+        argMod.pop_front();
+    }
+
+
+    //jumps
+    while(!argJmp.empty()){
+        elemento = argJmp.front();
+        map<string,rotulo>::iterator it2 = tabelaDeRotulos.find(elemento.arg);
+        if(it2 != tabelaDeRotulos.end()){
+            if(it2->second.isVar == 1){
+                erro++;
+                cout << "Erro semantico! Linha: " << elemento.linha <<  ". Pulo para a seçao de dados." << endl;
+            }
+        }
+
+        argJmp.pop_front();
+    }
+
+    //divs
+    while(!argDiv.empty()){
+        elemento = argDiv.front();
+        map<string,int>::iterator it2 = constParaValor.find(elemento.arg);
+        if(it2 != constParaValor.end()){
+            if(it2->second == 0){
+                erro++;
+                cout << "Erro semantico! Linha: " << elemento.linha <<  ". Divisão por zero." << endl;
+            }
+
+        }
+
+        argDiv.pop_front();
+    }
+
 
     //somente escrever se tiver tudo nos conformes
     if(!erro){
         fpOutput.open(outExtension);
         fpOutput << strParaArquivoTotal;
     }else{
-        cout << "Arquivo obj não gerado, há erros no source." << endl;
+        cout << "\n--> Arquivo obj não gerado, há erros no source." << endl;
     }
 
     fpInput.close();

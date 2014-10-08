@@ -1,11 +1,11 @@
 SECTION DATA
 ZERO: CONST 0
-SPACE: N1
-SPACE: N2
-SPACE: N3
+N1: space
+N2: space
+N3: space
 
-;COMENTARIO
-;OUTRO COMENTARIO LINDO
+;uhuuullll
+;aisdhf aishdf aisdhf asidhf; ausdhfuhsdafuh
 
 SECTION TEXT 		;COMENTERIASODIF 
 ADD N1
