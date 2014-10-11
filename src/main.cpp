@@ -12,11 +12,8 @@
 #include "../header/pre_parser.hpp"
 #include <cassert>
 
-
 #define tipo_map_macro std::map<const std::basic_string<char>, std::vector<std::vector<std::basic_string<char> > > >::iterator
 #define tipo_end_macro std::map<const std::basic_string<char>, std::vector<std::vector<std::basic_string<char> > > >::end
-
-
 
 using namespace std;
 using namespace pre_parser;
@@ -29,6 +26,7 @@ typedef struct rotulo
     bool isLabel;
     bool isVar;
     bool isConst;
+	int spaceSIZE;
 }rotulo;
 
 typedef struct argumento
@@ -484,6 +482,12 @@ int passagemUnica(char* input, char* output){
                         symbol.isConst = 1;
                     }else{
                         symbol.isConst = 0;
+						if(line.size() > 2){
+							symbol.spaceSIZE = stoi(line[2]);
+						}
+						else{
+							symbol.spaceSIZE = 0;
+						}
                     }
                     tabelaDeRotulos.insert(pair<string,rotulo>(labelTratado,symbol));
                 }
@@ -493,7 +497,7 @@ int passagemUnica(char* input, char* output){
                             symbol = it->second;
                             if(symbol.defined == 1) {
                                 //erro, rotulo redefinido
-                                cout << "Erro semantico! Linha: " << linha << ". Declaração de rótulo repitida." << endl;
+                                cout << "Erro semantico! Linha: " << linha << endl;
                                 erro++;
                             }
                             else{
@@ -589,7 +593,7 @@ int passagemUnica(char* input, char* output){
                 //verificar se esta na secao correta
                 if(!isOnText){
                     erro++;
-                    cout << "Erro semantico! Linha: " << linha << ". Instruçao fora da seçao TEXT." << endl;
+                    cout << "Erro semantico! Linha: " << linha << endl; //Instruçao fora da seçao TEXT
 
                 }
 
@@ -600,7 +604,7 @@ int passagemUnica(char* input, char* output){
                 if(line.size() != numOp + indice + 1){
                     // Erro! Numero de operandos invalido!
                     erro++;
-                    cout << "Erro sintatico! Linha: " << linha << ". Número de operandos invalido." << endl;
+                    cout << "Erro sintatico! Linha: " << linha << endl; //Número de operandos invalido
                 }
                 else if(numOp > 0){
                     //TODO: tratar os simbolos nao definidos
@@ -676,7 +680,7 @@ int passagemUnica(char* input, char* output){
                     //incrementar erros caso estiver na secao texto
                     if(!isOnData){
                         erro++;
-                        cout << "Erro semantico! Linha: " << linha << ". Declaraçao de variavel fora da secao DATA." << endl;
+                        cout << "Erro semantico! Linha: " << linha << endl; //Declaraçao de variavel fora da secao DATA
                     }
 
 
@@ -692,7 +696,7 @@ int passagemUnica(char* input, char* output){
                     //incrementar erros caso estiver na secao texto
                     if(!isOnData){
                         erro++;
-                        cout << "Erro semantico! Linha: " << linha <<  ". Declaraçao de variavel fora da secao DATA." << endl;
+                        cout << "Erro semantico! Linha: " << linha <<  endl; //Declaraçao de variavel fora da secao DATA 
                     }
 
 
@@ -763,20 +767,20 @@ int passagemUnica(char* input, char* output){
     //verificar erros finais
     if(numText == 0){
         erro++;
-        cout << "Erro semantico! Linha: " << linha << ". Seçao TEXT não declarada." << endl;
+        cout << "Erro semantico! Linha: " << linha << endl; //Seçao TEXT não declarada
     }
 
     if(numData == 0){
         erro++;
-        cout << "Erro semantico! Linha: " << linha <<  ". Seçao DATA não declarada." << endl;
+        cout << "Erro semantico! Linha: " << linha << endl; //Seçao DATA não declarada
     }
     if(numData > 1){
         erro++;
-        cout << "Erro semantico! Linha: " << linha <<  ". Secao DATA declarada mais de uma vez." << endl;
+        cout << "Erro semantico! Linha: " << linha << endl; //Secao DATA declarada mais de uma vez
     }
     if(numText > 1){
         erro++;
-        cout << "Erro semantico! Linha: " << linha <<  ". Secao TEXT declarada mais de uma vez." << endl;
+        cout << "Erro semantico! Linha: " << linha << endl; //Secao TEXT declarada mais de uma vez
     }
 
 

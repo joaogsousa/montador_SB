@@ -1,11 +1,27 @@
-section data
-a_2: space
-a_3: space
-c_1: const 2
-c_0: const 0
 section text
-load c_1
-sub c_0
-store a_2
-output a_2
+minha_macro: macro
+add lol
+sub lol
+output lol
+end
+macro2: macro
+add n2
+sub n2
+end
+copy n1 n2
+add n3
+minha_macro
+copy n2 n3
+mult aff
+macro2
+load n3
+output n3
+jmp rot2
+rot2: stop
 stop
+section data
+n1: space
+n2: space 4
+n3: space
+lol: space
+aff: const 446
