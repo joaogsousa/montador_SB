@@ -7,6 +7,24 @@ namespace pre_parser{
         return 0;
     }
 
+	int totOperandos(vector<string> line){
+		int i;
+		int total = 0;
+		string aux;
+
+		for (i = 0; i < line.size(); ++i)
+		{
+			if(line[i] == "+"){
+				total --;
+			}
+			else{
+				total++;
+			}	
+		}
+
+		return total;
+	}
+
     char * addFormato(char * input, const char * formato){
 	    char * extension;
 

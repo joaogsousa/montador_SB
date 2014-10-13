@@ -398,6 +398,7 @@ int passagemUnica(char* input, char* output){
     vector<string> endline;
     vector<string> linePassada;
     int tamanhoVetor;
+    int totOpSemAdd;
     int numOp;
     int opCode;
     rotulo symbol;
@@ -573,9 +574,17 @@ int passagemUnica(char* input, char* output){
                 }
                 if(opCode == 9 || opCode == 11 || opCode == 12){
                     //modificadores
-                    aux.arg = line[indice+1];
-                    aux.linha = linha;
-                    argMod.push_back(aux);
+		    if(opCode != 9){
+			    aux.arg = line[indice+1];
+			    aux.linha = linha;
+			    argMod.push_back(aux);
+		    }
+		    //copy modifica o segundo operando
+		    else{
+			    aux.arg = line[indice + 2];
+			    aux.linha = linha;
+			    argMod.push_back(aux);
+		    }
 
                 }
                 if(opCode > 4 && opCode < 9){
@@ -593,21 +602,25 @@ int passagemUnica(char* input, char* output){
                 //verificar se esta na secao correta
                 if(!isOnText){
                     erro++;
-                    cout << "Erro semantico! Linha: " << linha << endl; //Instruçao fora da seçao TEXT
+                    cout << "Erro semantico! Linha: " << linha << ". Instruçao fora da seçao TEXT." << endl;
 
                 }
 
+				//Tratamento de operandos
                 numOp = pre_parser::numOperandosByOpCode(opCode);
                 strParaArquivo += to_string(opCode);
                 strParaArquivo += " ";
 
-                if(line.size() != numOp + indice + 1){
+				totOpSemAdd = totOperandos(line);
+				//cout << totOpSemAdd << " Teste +" << endl;
+				// Verifica se o numero de operandos da instrucao eh valido (ignora os "+" e inteiros)
+				if(totOpSemAdd != numOp + indice + 1){
                     // Erro! Numero de operandos invalido!
                     erro++;
-                    cout << "Erro sintatico! Linha: " << linha << endl; //Número de operandos invalido
+                    cout << "Erro sintatico! Linha: " << linha << ". Número de operandos invalido." << endl;
                 }
                 else if(numOp > 0){
-                    //TODO: tratar os simbolos nao definidos
+					// Procurar os simbolos nas tabelas
                     find = 0;
                     for(i=0; i<numOp; i++){
                         operando = line[indice+i+1];
@@ -624,10 +637,29 @@ int passagemUnica(char* input, char* output){
                             for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
                                 if(it->first == operando){
                                     if(it->second.defined){
-                                        //mete no codigo
-                                        strParaArquivo += to_string(it->second.value);
-                                        strParaArquivo += " ";
-
+						if(totOpSemAdd == line.size()){
+							//mete no codigo
+							strParaArquivo += to_string(it->second.value);
+							strParaArquivo += " ";
+						}
+						else{
+							if(!it->second.isConst){
+								if(stoi(line[indice + i + 3]) >= it->second.spaceSIZE){
+									//error!! tentando acessar memoria nao reservada
+									cout << "Erro semantico! Linha: " << linha << ". Tentativa de acesso a memoria nao reservada." << endl;
+								}
+								else{
+									//acrescentando na string a posicao correta (mete no codigo)
+									cout << "Nunca passo aqui :(" << endl;
+									strParaArquivo += to_string(it->second.value + stoi(line[indice + i + 3]));
+									strParaArquivo += " ";
+								}
+							}
+							else{
+								//error!!! tentanto acessar const como vetor
+								cout << "Erro semantico! Linha: " << linha << ". Const nao pode ser acessado como vetor." << endl;
+							}
+						}
                                     }
                                     else{
                                         it->second.use.push_back(endereco+i+1);
@@ -680,7 +712,7 @@ int passagemUnica(char* input, char* output){
                     //incrementar erros caso estiver na secao texto
                     if(!isOnData){
                         erro++;
-                        cout << "Erro semantico! Linha: " << linha << endl; //Declaraçao de variavel fora da secao DATA
+                        cout << "Erro semantico! Linha: " << linha  << ". Declaraçao de variavel fora da secao DATA" << endl;
                     }
 
 
@@ -696,7 +728,7 @@ int passagemUnica(char* input, char* output){
                     //incrementar erros caso estiver na secao texto
                     if(!isOnData){
                         erro++;
-                        cout << "Erro semantico! Linha: " << linha <<  endl; //Declaraçao de variavel fora da secao DATA 
+                        cout << "Erro semantico! Linha: " << linha  << ". Declaraçao de variavel fora da secao DATA" <<  endl;
                     }
 
 
@@ -767,20 +799,20 @@ int passagemUnica(char* input, char* output){
     //verificar erros finais
     if(numText == 0){
         erro++;
-        cout << "Erro semantico! Linha: " << linha << endl; //Seçao TEXT não declarada
+        cout << "Erro semantico! Linha: " << linha << ". Seçao TEXT não declarada." << endl;
     }
 
     if(numData == 0){
         erro++;
-        cout << "Erro semantico! Linha: " << linha << endl; //Seçao DATA não declarada
+        cout << "Erro semantico! Linha: " << linha << ". Seçao DATA não declarada." << endl;
     }
     if(numData > 1){
         erro++;
-        cout << "Erro semantico! Linha: " << linha << endl; //Secao DATA declarada mais de uma vez
+        cout << "Erro semantico! Linha: " << linha << ". Secao DATA declarada mais de uma vez." << endl;
     }
     if(numText > 1){
         erro++;
-        cout << "Erro semantico! Linha: " << linha << endl; //Secao TEXT declarada mais de uma vez
+        cout << "Erro semantico! Linha: " << linha << ". Secao TEXT declarada mais de uma vez." << endl;
     }
 
 
