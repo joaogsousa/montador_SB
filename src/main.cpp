@@ -26,7 +26,7 @@ typedef struct rotulo
     bool isLabel;
     bool isVar;
     bool isConst;
-	int spaceSIZE;
+	int spaceSIZE = 1;
 }rotulo;
 
 typedef struct argumento
@@ -419,6 +419,9 @@ int passagemUnica(char* input, char* output){
     list<argumento> argJmp;
     list<argumento> argMod;
     map<string,int> constParaValor;
+	int maisFatorDeCorrecao;
+	string insercao;
+	int auxValue = 0;
 
     //pendencias: div por zero, modificar constante, pulo para secao data
     //instrucoes que modificam: copy:9  ;   store:11    ;   input:12
@@ -445,6 +448,7 @@ int passagemUnica(char* input, char* output){
         strParaArquivo = "";
         getline(fpInput, buffer);
         find = 0;
+		maisFatorDeCorrecao = 0;
         if(!buffer.empty()){
             lineToTokens = tokens(buffer);
             line = ignoraComentarios(lineToTokens);
@@ -487,7 +491,7 @@ int passagemUnica(char* input, char* output){
 							symbol.spaceSIZE = stoi(line[2]);
 						}
 						else{
-							symbol.spaceSIZE = 0;
+							symbol.spaceSIZE = 1;
 						}
                     }
                     tabelaDeRotulos.insert(pair<string,rotulo>(labelTratado,symbol));
@@ -498,7 +502,7 @@ int passagemUnica(char* input, char* output){
                             symbol = it->second;
                             if(symbol.defined == 1) {
                                 //erro, rotulo redefinido
-                                cout << "Erro semantico! Linha: " << linha << endl;
+                                cout << "Erro semantico! Linha: " << linha << ". Dupla definicao de rotulos." << endl;
                                 erro++;
                             }
                             else{
@@ -516,6 +520,12 @@ int passagemUnica(char* input, char* output){
                                     it->second.isConst = 1;
                                 }else{
                                     it->second.isConst = 0;
+									if(line.size() > 2){
+										it->second.spaceSIZE = stoi(line[2]);
+									}
+									else{
+										it->second.spaceSIZE = 1;
+									}
                                 }
 
 
@@ -542,6 +552,12 @@ int passagemUnica(char* input, char* output){
                             symbol.isConst = 1;
                         }else{
                             symbol.isConst = 0;
+							if(line.size() > 2){
+								symbol.spaceSIZE = stoi(line[2]);
+							}
+							else{
+								symbol.spaceSIZE = 1;
+							}
                         }
 
                         tabelaDeRotulos.insert(pair<string,rotulo>(labelTratado,symbol));
@@ -612,7 +628,7 @@ int passagemUnica(char* input, char* output){
                 strParaArquivo += " ";
 
 				totOpSemAdd = totOperandos(line);
-				//cout << totOpSemAdd << " Teste +" << endl;
+				//cout << totOpSemAdd << " Teste + " << line.size() << endl;
 				// Verifica se o numero de operandos da instrucao eh valido (ignora os "+" e inteiros)
 				if(totOpSemAdd != numOp + indice + 1){
                     // Erro! Numero de operandos invalido!
@@ -624,46 +640,40 @@ int passagemUnica(char* input, char* output){
                     find = 0;
                     for(i=0; i<numOp; i++){
                         operando = line[indice+i+1];
+						//Verificar se necessita levar vetor em consideracao
+						if(line.size() != (totOpSemAdd + indice) && numOp == i+1){
+							maisFatorDeCorrecao = stoi(line[indice + i + 3]);
+						}
+						else{
+							maisFatorDeCorrecao = 0;
+						}
                         if(tabelaDeRotulos.empty()){
                             symbol.defined = 0;
+							//editar para caso com vetor
                             symbol.value = 0;
                             symbol.use = listaux;
                             symbol.use.push_back(endereco+i+1);
                             tabelaDeRotulos.insert(pair<string,rotulo>(operando,symbol));
-                            strParaArquivo += to_string(0);
+                            strParaArquivo += to_string(maisFatorDeCorrecao);
                             strParaArquivo += " ";
                         }
                         else{
                             for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
                                 if(it->first == operando){
                                     if(it->second.defined){
-						if(totOpSemAdd == line.size()){
-							//mete no codigo
-							strParaArquivo += to_string(it->second.value);
-							strParaArquivo += " ";
-						}
-						else{
-							if(!it->second.isConst){
-								if(stoi(line[indice + i + 3]) >= it->second.spaceSIZE){
-									//error!! tentando acessar memoria nao reservada
-									cout << "Erro semantico! Linha: " << linha << ". Tentativa de acesso a memoria nao reservada." << endl;
-								}
-								else{
-									//acrescentando na string a posicao correta (mete no codigo)
-									cout << "Nunca passo aqui :(" << endl;
-									strParaArquivo += to_string(it->second.value + stoi(line[indice + i + 3]));
-									strParaArquivo += " ";
-								}
-							}
-							else{
-								//error!!! tentanto acessar const como vetor
-								cout << "Erro semantico! Linha: " << linha << ". Const nao pode ser acessado como vetor." << endl;
-							}
-						}
+										//mete no codigo
+										if(maisFatorDeCorrecao > it->second.spaceSIZE - 1 && it->second.isConst == false){
+											erro++;
+											cout << "Erro semantico! Linha: " << linha << ". Tentando acessar memoria nao reservada." << endl;
+										}
+										else{
+											strParaArquivo += to_string(it->second.value + maisFatorDeCorrecao);
+											strParaArquivo += " ";
+										}
                                     }
                                     else{
                                         it->second.use.push_back(endereco+i+1);
-                                        strParaArquivo += to_string(0);
+                                        strParaArquivo += to_string(maisFatorDeCorrecao);
                                         strParaArquivo += " ";
                                     }
                                     find = 1;
@@ -676,7 +686,7 @@ int passagemUnica(char* input, char* output){
                                 symbol.use = listaux;
                                 symbol.use.push_back(endereco+i+1);
                                 tabelaDeRotulos.insert(pair<string,rotulo>(operando,symbol));
-                                strParaArquivo += to_string(0);
+                                strParaArquivo += to_string(maisFatorDeCorrecao);
                                 strParaArquivo += " ";
                             }
                         }
@@ -769,20 +779,22 @@ int passagemUnica(char* input, char* output){
 
         }
 
-        if(it->second.defined == 0){
+		else if(it->second.defined == 0){
             cout << "Erro semantico. Linha: " << linha << ". Variavel não declarada." << endl;
             erro++;
 
         }else{
             while(!it->second.use.empty()){
                 //caution!!! código denso!
-                int auxValue;       // para pegar o valor qnd for um array tbm
                 endMod = it->second.use.front();
                 endMod = indiceComEndereco(endMod,strParaArquivoTotal);
+				auxValue = atoi(&strParaArquivoTotal[endMod]);
+				if(auxValue > it->second.spaceSIZE && it->second.isConst == false){
+					erro++;
+					cout << "Erro semantico. Linha: " << linha << ". Tentando acessar memoria nao reservada." << endl; 	
+				}
                 strParaArquivoTotal.erase(endMod,1);
-                string insercao("");
-                //auxValue = it->second.value + pre_parser::retornaIndiceDoLabel()
-                insercao = to_string(it->second.value);
+                insercao = to_string(it->second.value + auxValue);
                 strParaArquivoTotal.insert(endMod,insercao);
                 it->second.use.pop_front();
 
@@ -882,8 +894,8 @@ int main(int argc, char* argv[]){
     char * outMacro = new char[16];
     char * input;
     char * output;
-    strcpy(outPre, "outputs/outPre\0");
-    strcpy(outMacro, "outputs/outMacro\0");
+    strcpy(outPre, "outputs/outPre");
+    strcpy(outMacro, "outputs/outMacro");
     string strIn(argv[2]);
     string strOut(argv[3]);
 

@@ -14,7 +14,7 @@ namespace pre_parser{
 
 		for (i = 0; i < line.size(); ++i)
 		{
-			if(line[i] == "+"){
+			if(line[i] == "+" || line[i] == "-"){
 				total --;
 			}
 			else{
