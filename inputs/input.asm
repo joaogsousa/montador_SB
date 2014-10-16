@@ -9,13 +9,13 @@ add n2
 sub n2
 end
 if label1
-copy n1,n2 + 2
+copy n1, n2 + 2
 if 0
 rot: add n2
 if 1
 add n3
 minha_macro
-copy n2 n3
+copy n2, n3
 mult aff
 macro2
 load n3

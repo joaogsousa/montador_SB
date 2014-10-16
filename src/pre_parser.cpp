@@ -7,6 +7,17 @@ namespace pre_parser{
         return 0;
     }
 
+	int possuiVirgula(string operando){
+	   if(operando[operando.size() - 1] == ','){
+		   return 1;
+	   }
+	   return 0;
+	}
+
+	string retiraVirgula(string operando){
+		return operando.erase(operando.find(','));
+	}
+		 
 	int totOperandos(vector<string> line){
 		int i;
 		int total = 0;

@@ -16,6 +16,8 @@ using namespace std;
 namespace pre_parser{
     int isInstruction(string string1);
 	int totOperandos(vector<string> line);
+	int possuiVirgula(string operando);
+	string retiraVirgula(string operando);
     char * addFormato(char * input, const char * formato);
     int isPseudo(string string1);
     int isDiretiva(string string1);
