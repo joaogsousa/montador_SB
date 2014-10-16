@@ -552,7 +552,7 @@ int passagemUnica(char* input, char* output){
 							symbol.isConst = 1;
 						}else{
 							symbol.isConst = 0;
-							if(line.size() > 2){
+							if(line.size() > 2 && isOnData){
 								symbol.spaceSIZE = stoi(line[2]);
 							}
 							else{
@@ -655,12 +655,34 @@ int passagemUnica(char* input, char* output){
 						}
 						//Verificar se necessita levar vetor em consideracao
 						if((line.size() != totOpSemAdd) && numOp == i+1){
-							maisFatorDeCorrecao = stoi(line[indice + i + 3]);
+							if(isNum(line[indice+i+3][0])){
+								maisFatorDeCorrecao = stoi(line[indice + i + 3]);
+							}
+							/*else{
+								//percorre tabela de rotulos tudo de novo	
+								if((auto it3 = tabelaDeRotulos.find(line[indice + i + 3])) != tabelaDeRotulos.end()){
+									//achou o operando
+									//agora verificar se ele é const
+									if(it3->second.isConst == false){
+										//nao eh const, entao erro
+										cout << "Erro semantico! Linha: " << linha << ". Soma com space, deveria ser const ou numero" << endl;
+										erro++;
+									}
+									if(it3->second.defined){
+										//valor definido, colocar no fator de correcao
+
+									}
+
+								}else{
+									//acrescentar na tabela de rotulos
+
+								}
+							}*/
 							if(line[indice+i+2] == "-"){
 								maisFatorDeCorrecao *= -1;
 							}
 							else if(line[indice+i+2] != "+"){
-	 							cout << "Erro lexico! Linha: " << linha << ". Operador nao valido." << endl;
+								cout << "Erro lexico! Linha: " << linha << ". Operador nao valido." << endl;
 								erro++;
 							}
 						}

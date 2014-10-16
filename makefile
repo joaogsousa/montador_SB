@@ -2,13 +2,13 @@ all: programa
 
 
 programa: main.o pre_parser.o
-	g++ main.o pre_parser.o -std=c++11 -o montador
+	g++ main.o pre_parser.o -g -std=c++11 -o montador
 
 main.o: src/main.cpp
-	g++ src/main.cpp  -std=c++11 -c
+	g++ src/main.cpp -g -std=c++11 -c
 
 pre_parser.o: src/pre_parser.cpp header/pre_parser.hpp
-	g++ src/pre_parser.cpp -std=c++11 -c
+	g++ src/pre_parser.cpp -g -std=c++11 -c
 
 
 pre:
