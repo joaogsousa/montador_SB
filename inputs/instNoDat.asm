@@ -4,7 +4,6 @@ sub n2
 input n1
 stop
 
-
 section data
 n1: const 3
 n2: space
