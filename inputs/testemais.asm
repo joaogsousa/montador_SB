@@ -1,15 +1,11 @@
 SECTION TEXT
-COPY N1, N2 - 2 
+COPY N1 + 2, N2 - 2 
+jmp lol
 LOAD N1
 ADD N3 + 4
-jmpp N2
-lol: add N1 lola:
-
+lol: add N1 
 SECTION DATA
 N1: CONST 3
 N0: CONST 4
 N2: SPACE 3
 N3: SPACE 6
-
-
-
