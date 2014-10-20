@@ -23,14 +23,9 @@ end
 jmpp rot2
 Macro_1
 if label
-add n1 + 1
-add n1 + 1
-sub n1 - 10
-sub n1 + 5
+rot2: sub n1 - 10
 load n2 - 13
-add n1 + 150
 add aux
-copy aux, n1
 
 stop
 
