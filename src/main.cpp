@@ -659,26 +659,6 @@ int passagemUnica(char* input, char* output){
 							if(isNum(line[indice+i+3][0])){
 								maisFatorDeCorrecao = stoi(line[indice + i + 3]);
 							}
-							/*else{
-								//percorre tabela de rotulos tudo de novo	
-								if((auto it3 = tabelaDeRotulos.find(line[indice + i + 3])) != tabelaDeRotulos.end()){
-									//achou o operando
-									//agora verificar se ele é const
-									if(it3->second.isConst == false){
-										//nao eh const, entao erro
-										cout << "Erro semantico! Linha: " << linha << ". Soma com space, deveria ser const ou numero" << endl;
-										erro++;
-									}
-									if(it3->second.defined){
-										//valor definido, colocar no fator de correcao
-
-									}
-
-								}else{
-									//acrescentar na tabela de rotulos
-
-								}
-							}*/
 							if(line[indice+i+2] == "-"){
 								maisFatorDeCorrecao *= -1;
 							}
@@ -946,18 +926,17 @@ int main(int argc, char* argv[]){
 	char * output;
 	strcpy(outPre, "outputs/outPre");
 	strcpy(outMacro, "outputs/outMacro");
-	string strIn(argv[2]);
-	string strOut(argv[3]);
-
-	strIn += ".asm";
-
-
+	
 	if(argc != 4){
 		cout << "Erro! Numero de argumentos diferente do esperado." << endl;
 		exit(1);
 	}
 
-	//passagemUnica(argv[2], argv[3]);
+	string strIn(argv[2]);
+	string strOut(argv[3]);
+
+	strIn += ".asm";
+
 
 	input = argv[2];
 	output = argv[3];
@@ -982,12 +961,6 @@ int main(int argc, char* argv[]){
 		cout << "Erro! Tipo de operacao nao reconhecido." << endl;
 		return 1;
 	}
-
-	//*************************************************
-	//debug
-	//************************************************
-
-
 
 	return 0;
 }

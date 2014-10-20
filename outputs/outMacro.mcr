@@ -1,13 +1,21 @@
-SECTION DATA
-N1: CONST 3
-N0: CONST 4
-N2: SPACE 3
-N3: SPACE 6
-SECTION TEXT
-COPY N1, N2
-jmp lol
-LOAD N1
-ADD N3 + 4
-lol: add N1
-STORE N2
-OUTPUT N2
+section data
+n1: space
+n2: space 4
+n3: space
+lol: space
+aff: const 446
+section text
+copy n1, n2 + 2
+add n3
+add lol
+sub lol
+output lol
+copy n2, n3
+mult aff
+add n2
+sub n2
+load n3
+output n3
+jmp rot2
+rot2: stop
+stop
