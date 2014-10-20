@@ -106,7 +106,7 @@ void gerarTabelaDefines(char* input){
 
 
 	if(!fpInput.is_open()){
-		cout << "Arquivo de input não existe" << endl;
+		cout << "Arquivo de input nao existe" << endl;
 		exit(1);
 
 	}
@@ -239,7 +239,7 @@ int gerarTokens(char* input){
 
 
 	if(!fpInput.is_open()){
-		cout << "Arquivo de input não existe" << endl;
+		cout << "Arquivo de input nao existe" << endl;
 		exit(1);
 
 	}
@@ -422,7 +422,9 @@ int passagemUnica(char* input, char* output){
 	string insercao;
 	int auxValue = 0;
 	vector<int> vetParaArquivo;
-	int enderecoInicial, enderecoFinal = 0;
+	vector<int> usouMais;
+	int dataInicial, dataFinal = 0;
+	int teveMais;
 
 	//pendencias: div por zero, modificar constante, pulo para secao data
 	//instrucoes que modificam: copy:9  ;   store:11    ;   input:12
@@ -440,7 +442,7 @@ int passagemUnica(char* input, char* output){
 
 
 	if(!fpInput.is_open()){
-		cout << "Arquivo de input não existe" << endl;
+		cout << "Arquivo de input nao existe" << endl;
 		exit(1);
 
 	}
@@ -449,6 +451,7 @@ int passagemUnica(char* input, char* output){
 		strParaArquivo = "";
 		getline(fpInput, buffer);
 		find = 0;
+		teveMais = 0;
 		maisFatorDeCorrecao = 0;
 		if(!buffer.empty()){
 			lineToTokens = tokens(buffer);
@@ -488,7 +491,7 @@ int passagemUnica(char* input, char* output){
 						symbol.isConst = 1;
 					}else{
 						symbol.isConst = 0;
-						if(line.size() > 2 && stringCompareI(line[1],"space")){
+						if(line.size() > 2 && stringCompareI(line[1], "space")){
 							symbol.spaceSIZE = stoi(line[2]);
 						}
 						else{
@@ -641,30 +644,39 @@ int passagemUnica(char* input, char* output){
 					// Procurar os simbolos nas tabelas
 					find = 0;
 					for(i=0; i<numOp; i++){
-						operando = line[indice+i+1];
+						operando = line[teveMais + indice + i + 1];
 						// Verificacao do copy
 						if(numOp > 1){
 							//Verificar se o primeiro operando tem virgula
-							if(!possuiVirgula(operando) && i==0){
+							if(i == 0 && ((!possuiVirgula(operando)) && (line.size() == totOpSemAdd || !possuiVirgula(line[indice + 3])))){
 								cout << "Erro sintatico! Linha: " << linha << ". Operandos nao separados por virgula." << endl;
 								erro++;
 							}
 							else if(i==0){
 								//Retirar virgula do operando
-								operando = retiraVirgula(operando);
+								if(possuiVirgula(operando)){
+									operando = retiraVirgula(operando);
+								}
 							}
 						}
 						//Verificar se necessita levar vetor em consideracao
-						if((line.size() != totOpSemAdd) && numOp == i+1){
-							if(isNum(line[indice+i+3][0])){
-								maisFatorDeCorrecao = stoi(line[indice + i + 3]);
-							}
-							if(line[indice+i+2] == "-"){
-								maisFatorDeCorrecao *= -1;
-							}
-							else if(line[indice+i+2] != "+"){
-								cout << "Erro lexico! Linha: " << linha << ". Operador nao valido." << endl;
-								erro++;
+						if(line.size() != totOpSemAdd){
+							usouMais.push_back(endereco+i+1);
+							//Verifica se esta somando um digito
+							if(isNum(line[teveMais + indice+i+3][0])){
+								maisFatorDeCorrecao = stoi(line[teveMais + indice + i + 3]);
+								//Verifica se eh um operador de vetor valido
+								if(line[teveMais + indice+i+2] == "-"){
+									maisFatorDeCorrecao *= -1;
+								}
+								else if(line[teveMais + indice+i+2] != "+"){
+									//Nao usando "+" ou "-" para fazer operacao
+									cout << "Erro lexico! Linha: " << linha << ". Operador invalido." << endl;
+									erro++;
+								}
+								if(numOp > 1 && i==0){
+									teveMais = 2;
+								}
 							}
 						}
 						else{
@@ -686,15 +698,9 @@ int passagemUnica(char* input, char* output){
 								if(it->first == operando){
 									if(it->second.defined){
 										//mete no codigo
-										if(maisFatorDeCorrecao > it->second.spaceSIZE - 1 && it->second.isConst == false){
-											erro++;
-											cout << "Erro semantico! Linha: " << linha << ". Tentando acessar memoria nao reservada." << endl;
-										}
-										else{
-											strParaArquivo += to_string(it->second.value + maisFatorDeCorrecao);
-											strParaArquivo += " ";
-											vetParaArquivo.push_back(it->second.value + maisFatorDeCorrecao);
-										}
+										strParaArquivo += to_string(it->second.value + maisFatorDeCorrecao);
+										strParaArquivo += " ";
+										vetParaArquivo.push_back(it->second.value + maisFatorDeCorrecao);
 									}
 									else{
 										it->second.use.push_back(endereco+i+1);
@@ -775,7 +781,7 @@ int passagemUnica(char* input, char* output){
 				}else if(stringCompareI(line[indice],strSec) && stringCompareI(line[indice + 1],strTxt)){
 					//esta na secao texto
 					if(isOnData){
-						enderecoFinal = endereco;
+						dataFinal = endereco;
 					}
 					isOnText = 1;
 					isOnData = 0;
@@ -787,7 +793,7 @@ int passagemUnica(char* input, char* output){
 					isOnText = 0;
 					isOnData = 1;
 					numData++;
-					enderecoInicial = endereco;
+					dataInicial = endereco;
 
 				}else if(stringCompareI(line[indice],strSec) && !stringCompareI(line[indice + 1],strDat) && !stringCompareI(line[indice + 1],strTxt)){
 					//secao nao identificada
@@ -802,20 +808,22 @@ int passagemUnica(char* input, char* output){
 			}
 		}
 		linha++;
-		strParaArquivoTotal += strParaArquivo;
 	}
 
+	if(isOnData){
+		dataFinal = endereco - 1;
+	}
 
 	//Atualizar o obj com as listas de uso 
 	for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
 		if(!pre_parser::verificaValidadeDeToken(it->first)){
 			erro++;
-			cout << "erro lexico! linha: " << linha <<  ". identificador de rótulo inválido." << endl;
+			cout << "Erro lexico! linha: " << linha <<  ". Identificador de rotulo invalido." << endl;
 
 		}
 
 		else if(it->second.defined == 0){
-			cout << "Erro semantico. Linha: " << linha << ". Variavel não declarada." << endl;
+			cout << "Erro semantico. Linha: " << linha << ". Variavel nao declarada." << endl;
 			erro++;
 
 		}else{
@@ -823,13 +831,17 @@ int passagemUnica(char* input, char* output){
 				// Percorrer as listas e somar com os valores obtidos na passagem unica	
 				endMod = it->second.use.front();
 				auxValue = vetParaArquivo[endMod]; 
-				if(auxValue > it->second.spaceSIZE && it->second.isConst == false){
-					erro++;
-					cout << "Erro semantico. Linha: " << linha << ". Tentando acessar memoria nao reservada." << endl;	
-				}
 				vetParaArquivo[endMod] += it->second.value;
 				it->second.use.pop_front();
 			}
+		}
+	}
+
+	//Verificar acesso a memoria
+	for (i = 0; i < usouMais.size(); ++i)
+	{
+		if(vetParaArquivo[usouMais[i]] < dataInicial || vetParaArquivo[usouMais[i]] > dataFinal){
+			cout << "Erro semantico. Linha: " << linha << ". Tentando acessar memoria nao reservada." << endl;
 		}
 	}
 
@@ -862,7 +874,7 @@ int passagemUnica(char* input, char* output){
 		if(it2 != tabelaDeRotulos.end()){
 			if(it2->second.isConst == 1){
 				erro++;
-				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Modificaçao de constante." << endl;
+				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Modificacao de constante." << endl;
 			}
 		}
 
@@ -877,7 +889,7 @@ int passagemUnica(char* input, char* output){
 		if(it2 != tabelaDeRotulos.end()){
 			if(it2->second.isVar == 1){
 				erro++;
-				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Pulo para a seçao de dados." << endl;
+				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Pulo para a secao de dados." << endl;
 			}
 		}
 
@@ -891,7 +903,7 @@ int passagemUnica(char* input, char* output){
 		if(it2 != constParaValor.end()){
 			if(it2->second == 0){
 				erro++;
-				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Divisão por zero." << endl;
+				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Divisao por zero." << endl;
 			}
 
 		}
@@ -910,7 +922,7 @@ int passagemUnica(char* input, char* output){
 		fpOutput.open(outExtension);
 		fpOutput << strParaArquivoTotal;
 	}else{
-		cout << "\n--> Arquivo obj não gerado! Codigo fonte contem " << erro << " erro(s)." << endl;
+		cout << "\n--> Arquivo objeto nao gerado. Compilacao encontrou " << erro << " erros." << endl;
 	}
 
 	fpInput.close();
@@ -924,19 +936,18 @@ int main(int argc, char* argv[]){
 	char * outMacro = new char[16];
 	char * input;
 	char * output;
-	strcpy(outPre, "outputs/outPre");
-	strcpy(outMacro, "outputs/outMacro");
-	
+
 	if(argc != 4){
 		cout << "Erro! Numero de argumentos diferente do esperado." << endl;
 		exit(1);
 	}
 
+	strcpy(outPre, "outputs/outPre");
+	strcpy(outMacro, "outputs/outMacro");
 	string strIn(argv[2]);
 	string strOut(argv[3]);
 
 	strIn += ".asm";
-
 
 	input = argv[2];
 	output = argv[3];
@@ -961,6 +972,12 @@ int main(int argc, char* argv[]){
 		cout << "Erro! Tipo de operacao nao reconhecido." << endl;
 		return 1;
 	}
+
+	//*************************************************
+	//debug
+	//************************************************
+
+
 
 	return 0;
 }

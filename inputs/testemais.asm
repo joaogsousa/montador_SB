@@ -12,7 +12,7 @@ N3: SPACE 6
 
 SECTION TEXT
 ;comecao codigo
-COPY N1, N2
+COPY N1 N2
 jmp lol
 LOAD N1
 ADD N3 + 4
