@@ -423,7 +423,7 @@ int passagemUnica(char* input, char* output){
 	int auxValue = 0;
 	vector<int> vetParaArquivo;
 	vector<int> usouMais;
-	int enderecoInicial, enderecoFinal = 0;
+	int dataInicial, dataFinal = 0;
 	int teveMais;
 
 	//pendencias: div por zero, modificar constante, pulo para secao data
@@ -787,7 +787,7 @@ int passagemUnica(char* input, char* output){
 				}else if(stringCompareI(line[indice],strSec) && stringCompareI(line[indice + 1],strTxt)){
 					//esta na secao texto
 					if(isOnData){
-						enderecoFinal = endereco;
+						dataFinal = endereco;
 					}
 					isOnText = 1;
 					isOnData = 0;
@@ -799,7 +799,7 @@ int passagemUnica(char* input, char* output){
 					isOnText = 0;
 					isOnData = 1;
 					numData++;
-					enderecoInicial = endereco;
+					dataInicial = endereco;
 
 				}else if(stringCompareI(line[indice],strSec) && !stringCompareI(line[indice + 1],strDat) && !stringCompareI(line[indice + 1],strTxt)){
 					//secao nao identificada
@@ -817,19 +817,19 @@ int passagemUnica(char* input, char* output){
 	}
 
 	if(isOnData){
-		enderecoFinal = endereco - 1;
+		dataFinal = endereco - 1;
 	}
 
 	//Atualizar o obj com as listas de uso 
 	for(map<string,rotulo>::iterator it=tabelaDeRotulos.begin(); it!=tabelaDeRotulos.end(); it++){
 		if(!pre_parser::verificaValidadeDeToken(it->first)){
 			erro++;
-			cout << "erro lexico! linha: " << linha <<  ". identificador de rótulo inválido." << endl;
+			cout << "Erro lexico! linha: " << linha <<  ". Identificador de rótulo invalido." << endl;
 
 		}
 
 		else if(it->second.defined == 0){
-			cout << "Erro semantico. Linha: " << linha << ". Variavel não declarada." << endl;
+			cout << "Erro semantico. Linha: " << linha << ". Variavel nao declarada." << endl;
 			erro++;
 
 		}else{
@@ -846,7 +846,7 @@ int passagemUnica(char* input, char* output){
 	//Verificar acesso a memoria
 	for (i = 0; i < usouMais.size(); ++i)
 	{
-		if(vetParaArquivo[usouMais[i]] < enderecoInicial || vetParaArquivo[usouMais[i]] > enderecoFinal){
+		if(vetParaArquivo[usouMais[i]] < dataInicial || vetParaArquivo[usouMais[i]] > dataFinal){
 			cout << "Erro semantico. Tentando acessar memoria nao reservada." << endl;
 		}
 	}
@@ -880,7 +880,7 @@ int passagemUnica(char* input, char* output){
 		if(it2 != tabelaDeRotulos.end()){
 			if(it2->second.isConst == 1){
 				erro++;
-				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Modificaçao de constante." << endl;
+				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Modificacao de constante." << endl;
 			}
 		}
 
@@ -895,7 +895,7 @@ int passagemUnica(char* input, char* output){
 		if(it2 != tabelaDeRotulos.end()){
 			if(it2->second.isVar == 1){
 				erro++;
-				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Pulo para a seçao de dados." << endl;
+				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Pulo para a secao de dados." << endl;
 			}
 		}
 
@@ -909,7 +909,7 @@ int passagemUnica(char* input, char* output){
 		if(it2 != constParaValor.end()){
 			if(it2->second == 0){
 				erro++;
-				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Divisão por zero." << endl;
+				cout << "Erro semantico! Linha: " << elemento.linha <<  ". Divisao por zero." << endl;
 			}
 
 		}
