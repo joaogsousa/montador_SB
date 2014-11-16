@@ -245,10 +245,21 @@ namespace pre_parser{
         if(stringCompareI(string1, "OUTPUT")){
             return 13;
         }
+		if(stringCompareI(string1, "C_INPUT")){
+			return 14;
+		}
+		if(stringCompareI(string1, "C_OUTPUT")){
+			return 15;
+		}
+		if(stringCompareI(string1, "S_INPUT")){
+			return 16;
+		}
+		if(stringCompareI(string1, "S_OUTPUT")){
+			return 17;
+		}
         if(stringCompareI(string1, "STOP")){
-            return 14;
+            return 18;
         }
-
         return 0;
     }
 
