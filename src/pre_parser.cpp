@@ -65,7 +65,7 @@ namespace pre_parser{
         if(opCode == 9){
             return 2;
         }
-        else if(opCode == 14){
+        else if(opCode == 18){
             return 0;
         }
         else if(opCode > 0 && opCode < 15){
